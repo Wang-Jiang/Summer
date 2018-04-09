@@ -1,0 +1,38 @@
+# Eclipse
+.project
+.classpath
+.settings/
+
+# Maven
+target/
+dependency-reduced-pom.xml
+pom.xml.versionsBackup
+
+# Gradle
+.gradle/
+build/
+
+#IDEA
+# idea ignore
+.idea/
+*.ipr
+*.iml
+*.iws
+out/
+
+# temp ignore
+*.log
+*.cache
+*.diff
+*.patch
+*.tmp
+
+# system ignore
+.DS_Store
+Thumbs.db
+
+# other ignore
+DEV-TODO-LIST.md
+*.db3
+/src/test/resources/sqlite-config.properties
+/src/test/resources/mysql-config.properties

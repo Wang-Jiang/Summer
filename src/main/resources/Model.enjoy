@@ -1,0 +1,9 @@
+package #(modelPackage);
+
+import #(modelBeanPackage).#(beanName);
+
+public class #(modelName) extends #(beanName)<#(modelName)> {
+
+    public static final #(modelName) DAO = new #(modelName)();
+
+}
