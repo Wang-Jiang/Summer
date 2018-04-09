@@ -13,7 +13,7 @@ public class SummerCommon {
     public static final String START_LOGO = new ResourceReader().read("StartLogo.txt");
     private static String BASE_HTML = new ResourceReader().read("ErrorPage.html");
     public static final String NAME = "Summer";
-    public static final String VERSION = "0.1.0";
+    public static final String VERSION = "0.1.1";
     private static Map<Integer, String> errorHtmlMap = new HashMap<>();
 
     static {
