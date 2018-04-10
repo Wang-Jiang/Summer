@@ -1,5 +1,7 @@
 package space.wangjiang.summer.util;
 
+import java.io.*;
+
 /**
  * Created by WangJiang on 2016/7/10.
  */
@@ -60,6 +62,63 @@ public class FileUtil {
     public static String getFileName(String path) {
         String[] array = path.replaceAll("\\\\", "/").split("/");
         return array[array.length - 1];
+    }
+
+    /**
+     * 获取系统临时文件目录
+     */
+    public static String getSystemTempDir() {
+        return System.getProperty("java.io.tmpdir");
+    }
+
+    public static String readFileToString(File file, String encoding) {
+        StringBuilder sb = new StringBuilder();
+        try (InputStreamReader streamReader = new InputStreamReader(new FileInputStream(file), encoding);
+             BufferedReader reader = new BufferedReader(streamReader)) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return sb.toString();
+    }
+
+    //以下代码修改自Common IO
+
+    public static void write(File file, CharSequence data, String encoding) throws IOException {
+        write(file, data, encoding, false);
+    }
+
+    public static void write(File file, CharSequence data, String encoding, boolean append) throws IOException {
+        String str = data == null ? null : data.toString();
+        writeStringToFile(file, str, encoding, append);
+    }
+
+    public static void writeStringToFile(File file, String data, String encoding, boolean append) throws IOException {
+        try (FileOutputStream out = openOutputStream(file, append)) {
+            if (data != null) {
+                out.write(data.getBytes(encoding));
+            }
+        }
+    }
+
+    private static FileOutputStream openOutputStream(File file, boolean append) throws IOException {
+        if (file.exists()) {
+            if (file.isDirectory()) {
+                throw new IOException("File '" + file + "' exists but is a directory");
+            }
+            if (!file.canWrite()) {
+                throw new IOException("File '" + file + "' cannot be written to");
+            }
+        } else {
+            File parent = file.getParentFile();
+            if (parent != null && !parent.mkdirs() && !parent.isDirectory()) {
+                throw new IOException("Directory '" + parent + "' could not be created");
+            }
+        }
+        return new FileOutputStream(file, append);
     }
 
 }

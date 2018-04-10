@@ -1,18 +1,12 @@
-# Summer 0.1.0 使用文档
+# Summer 使用文档
 
 Summer是典型的MVC结构(Summer没有提供View，可以直接使用JSP或者其它模板引擎)，其Controller与Model与其它MVC框架中的概念没有太大区别。同时Summer支持AOP(面向切面编程)，具体内容参见下面的Interceptor(拦截器)和Form(数据校验)
 
 > 项目依旧处于开发设计阶段，很多地方在未来可能会变化很大
 
 ## 创建一个JavaWeb项目
-首先，需要建一个标准的JavaWeb项目，导入必要的jar包或者使用Maven配置。除了JavaWeb必要的库之外，你的项目至少应该依赖下面两个库
+首先，需要建一个标准的JavaWeb项目，建议使用Maven管理项目。除了JavaWeb必要的库之外，你的项目至少应该依赖下面这个库(其它库是直接compile的，Maven会自动导入)
 ```xml
-<dependency>
-    <groupId>commons-io</groupId>
-    <artifactId>commons-io</artifactId>
-    <version>2.5</version>
-</dependency>
-
 <dependency>
     <groupId>com.alibaba</groupId>
     <artifactId>druid</artifactId>
@@ -453,7 +447,7 @@ Summer的Model受JFinal影响非常大，我个人很喜欢直接写SQL，简单
 * 不支持缓存
 
 ### ModelConfig
-在使用Model功能之前，需要配置数据库的JDBC驱动、JDBCUrl、用户名和密码，在你的Config类中的```initModel()```方法中添加类似于如下内容
+在使用Model功能之前，需要配置数据库的JDBC驱动、JDBCUrl、用户名和密码，在你的Config类中的```initModel()```方法中添加类似于如下内容(还需要在pom.xml中引入相应的JDBC驱动)
 ```java
 @Override
 public void initModel(ModelConfig config) {
