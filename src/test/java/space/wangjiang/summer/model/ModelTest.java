@@ -3,6 +3,7 @@ package space.wangjiang.summer.model;
 import org.junit.Before;
 import org.junit.Test;
 import space.wangjiang.easylogger.EasyLogger;
+import space.wangjiang.summer.common.Logger;
 import space.wangjiang.summer.util.StringUtil;
 
 import java.sql.Timestamp;
@@ -319,20 +320,32 @@ public class ModelTest {
 
         user.clear();
         EasyLogger.json(user);
+    }
 
+    /**
+     * 字段别名
+     */
+    @Test
+    public void asTest() {
+        User user = User.DAO.findFirst("SELECT id,username AS name FROM user WHERE id=? LIMIT 1", getRandomUserId());
+        EasyLogger.debug(user);
     }
 
     /**
      * 获取一个随机的UserId
      */
     private Integer getRandomUserId() {
-        List<User> list = User.DAO.find("select * from user");
+        Logger.debug("getRandomUserId====>start");
+        List<User> list = User.DAO.find("select id from user");
+        Logger.debug("getRandomUserId====>end");
         int randomIndex = new Random().nextInt(list.size());
         return list.get(randomIndex).getId();
     }
 
     private Integer getRandomBlogId() {
-        List<Blog> list = Blog.DAO.find("select * from blog");
+        Logger.debug("getRandomBlogId====>start");
+        List<Blog> list = Blog.DAO.find("select id from blog");
+        Logger.debug("getRandomBlogId====>end");
         int randomIndex = new Random().nextInt(list.size());
         return list.get(randomIndex).getId();
     }

@@ -8,7 +8,10 @@ import space.wangjiang.summer.model.db.Dialect;
 
 import java.math.BigDecimal;
 import java.sql.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by WangJiang on 2017/9/8.
@@ -41,15 +44,16 @@ public class Model<M extends Model> implements IJson {
             resultSet = statement.executeQuery();
             //由查询的结果构建Model
             ResultSetMetaData metaData = resultSet.getMetaData();
-            String[] columns = new String[metaData.getColumnCount()];
-            for (int i = 0; i < columns.length; i++) {
-                columns[i] = metaData.getColumnName(i + 1); //这个index是从1算的
+            String[] columnLabels = new String[metaData.getColumnCount()];
+            for (int i = 0; i < columnLabels.length; i++) {
+                //不能调用getColumnName，这个是数据库的实际字段，如果使用了AS别名，getObject就会出错
+                columnLabels[i] = metaData.getColumnLabel(i + 1); //这个index是从1算的
             }
             while (resultSet.next()) {
 //                M attrs = new M();    //这种语法是错误的，只能通过反射实现
                 M model = (M) getClass().newInstance(); //unchecked cast警告
-                for (String column : columns) {
-                    model.set(column, resultSet.getObject(column));
+                for (String columnLabel : columnLabels) {
+                    model.set(columnLabel, resultSet.getObject(columnLabel));
                 }
                 list.add(model);
             }
