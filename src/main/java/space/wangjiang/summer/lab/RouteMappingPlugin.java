@@ -2,18 +2,17 @@ package space.wangjiang.summer.lab;
 
 import space.wangjiang.summer.config.SummerConfig;
 import space.wangjiang.summer.controller.Controller;
-import space.wangjiang.summer.plugin.IPlugin;
+import space.wangjiang.summer.plugin.Plugin;
 import space.wangjiang.summer.scanner.AbsClassScanner;
 import space.wangjiang.summer.util.StringUtil;
 
-import java.lang.reflect.Method;
 import java.util.List;
 
 /**
  * 用于配置标记了@RouteMapping的Controller，这样就不需要在SummerConfig中配置了
  */
 @SuppressWarnings("unchecked")
-public class RouteMappingPlugin implements IPlugin {
+public class RouteMappingPlugin implements Plugin {
 
     private String basePackage;
 

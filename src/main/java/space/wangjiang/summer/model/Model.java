@@ -4,7 +4,7 @@ import space.wangjiang.easylogger.json.IJson;
 import space.wangjiang.easylogger.json.JsonUtil;
 import space.wangjiang.summer.common.Logger;
 import space.wangjiang.summer.config.SummerConfig;
-import space.wangjiang.summer.model.db.Dialect;
+import space.wangjiang.summer.model.dialect.Dialect;
 
 import java.math.BigDecimal;
 import java.sql.*;
@@ -38,7 +38,7 @@ public class Model<M extends Model> implements IJson {
         PreparedStatement statement = null;
         ResultSet resultSet = null;
         try {
-            connection = DataSourceUtil.getConnection();
+            connection = getConnection();
             statement = connection.prepareStatement(sql);
             getDialect().fillStatement(statement, params);
             resultSet = statement.executeQuery();
@@ -60,7 +60,7 @@ public class Model<M extends Model> implements IJson {
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
-            DataSourceUtil.close(connection, statement, resultSet);
+            ConnectionUtil.close(connection, statement, resultSet);
         }
         return list;
     }
@@ -90,7 +90,7 @@ public class Model<M extends Model> implements IJson {
         PreparedStatement statement = null;
         ResultSet resultSet = null;
         try {
-            connection = DataSourceUtil.getConnection();
+            connection = getConnection();
             //后面的参数表明返回ID
             statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             getDialect().fillStatement(statement, params); //填充参数
@@ -106,7 +106,7 @@ public class Model<M extends Model> implements IJson {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         } finally {
-            DataSourceUtil.close(connection, statement, resultSet);
+            ConnectionUtil.close(connection, statement, resultSet);
         }
     }
 
@@ -163,7 +163,7 @@ public class Model<M extends Model> implements IJson {
      */
     public boolean executeUpdate(String sql, Object... params) {
         Logger.debug("executeUpdate=" + sql);
-        try (Connection connection = DataSourceUtil.getConnection();
+        try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             getDialect().fillStatement(statement, params);
             return statement.executeUpdate() >= 1;
@@ -317,6 +317,10 @@ public class Model<M extends Model> implements IJson {
 
     private Dialect getDialect() {
         return SummerConfig.getModelConfigStatically().getDialect();
+    }
+
+    private Connection getConnection() throws SQLException {
+        return SummerConfig.getModelConfigStatically().getConnection();
     }
 
     /**

@@ -4,7 +4,6 @@ import space.wangjiang.easylogger.EasyLogger;
 import space.wangjiang.summer.common.Logger;
 import space.wangjiang.summer.constant.ConstantConfig;
 import space.wangjiang.summer.controller.ErrorController;
-import space.wangjiang.summer.model.DataSourceUtil;
 import space.wangjiang.summer.model.ModelConfig;
 import space.wangjiang.summer.plugin.PluginConfig;
 import space.wangjiang.summer.route.Route;
@@ -185,8 +184,7 @@ public abstract class SummerConfig implements Filter {
     public void destroy() {
         //停止所有的插件
         pluginConfig.stopPlugins();
-        //数据库连接池关闭
-        DataSourceUtil.closeDataSource();
+        modelConfig.destroy();
         Logger.debug("Summer has been destroyed");
     }
 

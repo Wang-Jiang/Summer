@@ -1,12 +1,11 @@
 package space.wangjiang.summer.model;
 
 import space.wangjiang.summer.config.Prop;
-import space.wangjiang.summer.model.db.MySqlDialect;
-import space.wangjiang.summer.model.db.SqliteDialect;
-import space.wangjiang.summer.util.PathUtil;
-
-import javax.sql.DataSource;
-import java.io.File;
+import space.wangjiang.summer.model.dialect.MySqlDialect;
+import space.wangjiang.summer.model.dialect.SqliteDialect;
+import space.wangjiang.summer.model.provider.ConnectionProvider;
+import space.wangjiang.summer.model.provider.DefaultConnectionProvider;
+import space.wangjiang.summer.model.provider.DruidConnectionProvider;
 
 /**
  * 测试统一管理Model
@@ -16,6 +15,7 @@ public class ModelTestUtil {
     public static ModelConfig getModelConfig() {
         ModelConfig config = new ModelConfig();
         configMySql(config);
+        config.setConnectionProvider(new DruidConnectionProvider());
         return config;
     }
 
@@ -37,13 +37,14 @@ public class ModelTestUtil {
         config.setDialect(new MySqlDialect());
     }
 
-    public static DataSource getDataSource() {
-        try {
-            DataSourceUtil.init(getModelConfig());
-            return DataSourceUtil.getDataSource();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public static ConnectionProvider getConnectionProvider() {
+        Prop prop = new Prop("mysql-config.properties", "UTF-8");
+        ConnectionProvider provider = new DefaultConnectionProvider();
+        provider.init(prop.getStr("db.driver"),
+                prop.getStr("db.jdbcUrl"),
+                prop.getStr("db.user"),
+                prop.getStr("db.password"));
+        return provider;
     }
 
 }

@@ -1,9 +1,12 @@
 package space.wangjiang.summer.model;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import space.wangjiang.easylogger.EasyLogger;
 import space.wangjiang.summer.common.Logger;
+import space.wangjiang.summer.model.provider.DefaultConnectionProvider;
+import space.wangjiang.summer.model.provider.DruidConnectionProvider;
 import space.wangjiang.summer.util.StringUtil;
 
 import java.sql.Timestamp;
@@ -28,6 +31,11 @@ public class ModelTest {
 
         EasyLogger.showCallMethodAndLine(false);
         EasyLogger.setTag("ModelTest");
+    }
+
+    @After
+    public void stop() {
+        ModelConfig.config.destroy();
     }
 
     private void log(Object object) {
@@ -329,6 +337,30 @@ public class ModelTest {
     public void asTest() {
         User user = User.DAO.findFirst("SELECT id,username AS name FROM user WHERE id=? LIMIT 1", getRandomUserId());
         EasyLogger.debug(user);
+    }
+
+    /**
+     * 测试DefaultConnectionProvider和DruidConnectionProvider
+     */
+    @Test
+    public void defaultConnectionProviderTest() {
+        ModelConfig.config.setConnectionProvider(new DefaultConnectionProvider());
+        task();
+    }
+
+    @Test
+    public void druidConnectionProviderTest() {
+        ModelConfig.config.setConnectionProvider(new DruidConnectionProvider());
+        task();
+    }
+
+    private void task() {
+        long start = System.currentTimeMillis();
+        int userId = getRandomUserId();
+        for (int i = 0; i < 200; i++) {
+            User.DAO.findFirst("SELECT * FROM user WHERE id=" + userId);
+        }
+        EasyLogger.debug("耗时：" + (System.currentTimeMillis() - start));
     }
 
     /**

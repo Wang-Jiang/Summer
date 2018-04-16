@@ -1,4 +1,4 @@
-package space.wangjiang.summer.model.db;
+package space.wangjiang.summer.model.dialect;
 
 /**
  * Created by WangJiang on 2017/10/2.

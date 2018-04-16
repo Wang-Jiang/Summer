@@ -11,18 +11,18 @@ import java.util.List;
  */
 public class PluginConfig {
 
-    private List<IPlugin> plugins = new ArrayList<>();
+    private List<Plugin> plugins = new ArrayList<>();
 
-    public void addPlugin(IPlugin plugin) {
+    public void addPlugin(Plugin plugin) {
         plugins.add(plugin);
     }
 
-    public List<IPlugin> getPlugins() {
+    public List<Plugin> getPlugins() {
         return plugins;
     }
 
     public void startPlugins() {
-        for (IPlugin plugin : plugins) {
+        for (Plugin plugin : plugins) {
             boolean success = plugin.start();
             if (!success) {
                 //插件启动失败
@@ -32,7 +32,7 @@ public class PluginConfig {
     }
 
     public void stopPlugins() {
-        for (IPlugin plugin : plugins) {
+        for (Plugin plugin : plugins) {
             boolean success = plugin.stop();
             if (!success) {
                 //插件停止失败

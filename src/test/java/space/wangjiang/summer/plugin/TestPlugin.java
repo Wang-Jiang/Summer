@@ -3,7 +3,7 @@ package space.wangjiang.summer.plugin;
 /**
  * Created by WangJiang on 2017/9/10.
  */
-public class TestPlugin implements IPlugin {
+public class TestPlugin implements Plugin {
 
     @Override
     public boolean start() {

@@ -4,9 +4,8 @@ import org.junit.Before;
 import org.junit.Test;
 import space.wangjiang.easylogger.EasyLogger;
 import space.wangjiang.summer.common.Logger;
-import space.wangjiang.summer.model.db.MySqlDialect;
-import space.wangjiang.summer.model.db.SqliteDialect;
-import space.wangjiang.summer.util.FileUtil;
+import space.wangjiang.summer.model.dialect.MySqlDialect;
+import space.wangjiang.summer.model.provider.ConnectionProvider;
 
 import javax.sql.DataSource;
 import java.io.File;
@@ -16,13 +15,13 @@ import java.io.File;
  */
 public class ModelGeneratorTest {
 
-    private ModelGenerator buildModelGenerator(DataSource dataSource) {
+    private ModelGenerator buildModelGenerator(ConnectionProvider provider) {
         String rootPath = new File("").getAbsolutePath();
         String modelPath = rootPath + "/src/test/java/space/wangjiang/summer/model/";
         String modelPackage = "space.wangjiang.summer.model";
 
         ModelGenerator generator = new ModelGenerator();
-        generator.setDataSource(dataSource);
+        generator.setConnectionProvider(provider);
         generator.setModelPath(modelPath);
         generator.setModelBeanPath(modelPath + "bean");
         generator.setModelPackage(modelPackage);
@@ -38,8 +37,7 @@ public class ModelGeneratorTest {
 
     @Test
     public void generatorTest() throws Exception {
-        DataSource dataSource = ModelTestUtil.getDataSource();
-        ModelGenerator generator = buildModelGenerator(dataSource);
+        ModelGenerator generator = buildModelGenerator(ModelTestUtil.getConnectionProvider());
         generator.generate();
     }
 

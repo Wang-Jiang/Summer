@@ -1,8 +1,12 @@
 package space.wangjiang.summer.model;
 
-import space.wangjiang.summer.model.db.Dialect;
-import space.wangjiang.summer.model.db.MySqlDialect;
+import space.wangjiang.summer.model.dialect.Dialect;
+import space.wangjiang.summer.model.dialect.MySqlDialect;
+import space.wangjiang.summer.model.provider.ConnectionProvider;
+import space.wangjiang.summer.model.provider.DefaultConnectionProvider;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,6 +21,7 @@ public class ModelConfig {
     private String username = null;
     private String password = null;
     private Dialect dialect = new MySqlDialect();   //默认方言是mysql
+    private ConnectionProvider connectionProvider = new DefaultConnectionProvider();  //连接提供器
 
     /**
      * 这个是为了解决在非Web环境下使用Model功能
@@ -36,14 +41,20 @@ public class ModelConfig {
         config = this;
     }
 
+    /**
+     * 需要手动调用初始化
+     */
     public void init(String driver, String url, String username, String password) {
         this.driver = driver;
         this.url = url;
         this.username = username;
         this.password = password;
 
-        //初始化DataSourceUtil
-        DataSourceUtil.init(this);
+        initConnectionProvider();
+    }
+
+    private void initConnectionProvider() {
+        connectionProvider.init(driver, url, username, password);
     }
 
     /**
@@ -87,4 +98,31 @@ public class ModelConfig {
     public void setDialect(Dialect dialect) {
         this.dialect = dialect;
     }
+
+    /**
+     * 当设置完ConnectionProvider的时候，需要调init()初始化
+     * 因为有两种情况调用顺序
+     * ModelConfig.init();
+     * ModelConfig.setConnectionProvider(); //这个时候需要调用ConnectionProvider的init()方法
+     * <p>
+     * ModelConfig.setConnectionProvider(); //覆盖了原始的ConnectionProvider，调用init()方法url、username等都是null
+     * ModelConfig.init(); //重复ConnectionProvider的init()方法
+     */
+    public void setConnectionProvider(ConnectionProvider connectionProvider) {
+        this.connectionProvider = connectionProvider;
+        initConnectionProvider();
+    }
+
+    public ConnectionProvider getConnectionProvider() {
+        return connectionProvider;
+    }
+
+    public Connection getConnection() throws SQLException {
+        return connectionProvider.getConnection();
+    }
+
+    public void destroy() {
+        connectionProvider.destroy();
+    }
+
 }

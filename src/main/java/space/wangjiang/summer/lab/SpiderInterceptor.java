@@ -4,7 +4,7 @@ import space.wangjiang.easylogger.EasyLogger;
 import space.wangjiang.summer.aop.Bundle;
 import space.wangjiang.summer.aop.Interceptor;
 import space.wangjiang.summer.controller.Controller;
-import space.wangjiang.summer.plugin.IPlugin;
+import space.wangjiang.summer.plugin.Plugin;
 import space.wangjiang.summer.util.StringUtil;
 
 import javax.servlet.http.HttpServletRequest;
@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Created by WangJiang on 2017/9/21.
  * 反爬虫拦截器，简单的IP过滤
  */
-public class SpiderInterceptor implements Interceptor, IPlugin {
+public class SpiderInterceptor implements Interceptor, Plugin {
 
     /**
      * 因为搜索引擎也会爬取页面，可以加入白名单中

@@ -5,14 +5,7 @@ Summer是典型的MVC结构(Summer没有提供View，可以直接使用JSP或者
 > 项目依旧处于开发设计阶段，很多地方在未来可能会变化很大
 
 ## 创建一个JavaWeb项目
-首先，需要建一个标准的JavaWeb项目，建议使用Maven管理项目。除了JavaWeb必要的库之外，你的项目至少应该依赖下面这个库(其它库是直接compile的，Maven会自动导入)
-```xml
-<dependency>
-    <groupId>com.alibaba</groupId>
-    <artifactId>druid</artifactId>
-    <version>1.1.9</version>
-</dependency>
-```
+首先，需要建一个标准的JavaWeb项目，建议使用Maven管理项目
 
 ## SummerConfig(Summer配置)
 SummerConfig是Summer框架中非常核心的内容，它的本质是一个过滤器。它负责Summer各个组件的初始化，当接受到一个新的请求时，SummerConfig会查找路由表，将这个请求交给相应的Controller的方法处理，从这个角度来看，其功能和Spring中的DispatcherServlet很相似
@@ -441,8 +434,7 @@ Model是一个相当重要的内容，它提供了操作数据库的功能
 
 Summer的Model受JFinal影响非常大，我个人很喜欢直接写SQL，简单粗暴，像Django那样的ORM框架设计，感觉手脚被绑住一样，JPA虽然是很赞的设计，但是面对复杂查询，表现不是很理想
 
-目前Summer的数据库还是相当简陋，不够灵活
-* 数据库连接池只能使用Druid
+目前Summer的数据库还是相当简陋
 * 不支持事务操作
 * 不支持缓存
 
@@ -477,6 +469,18 @@ public void initModel(ModelConfig config) {
 ```
 
 第一个参数是表名，第二个是主键，第三个是你的Model类
+
+### ConnectionProvider(数据库连接提供器)
+ConnectionProvider是一个接口，主要是给Model提供Connection，你可以使用数据库连接池(参见DruidConnectionProvider，基于阿里的Druid数据库连接池)，或者直接```DriverManager.getConnection(url, username, password)```来手动获取连接(参见DefaultConnectionProvider，Summer默认使用这个)。如下，在SummerConfig配置
+```java
+@Override
+public void initModel(ModelConfig config) {
+    //...
+    config.setConnectionProvider(new DruidConnectionProvider());
+}
+```
+
+当然你也可以不设置，Summer会直接使用DefaultConnectionProvider，但是注意，默认连接提供器每次都会创建一个新的连接，因此会比较耗时
 
 ### 复合主键(联合主键)
 Summer支持复合主键，配置很简单，不过需要注意，主键的顺序很重要，需要和数据库的实际顺序相同
@@ -550,7 +554,8 @@ Summer的Model存取值都是类似于```getInt("blog_id")```这种操作，你�
 为了解决这个办法，Summer给出的建议是编写ModelBean类，封装Model的getter和setter方法。当然这种纯体力的劳动，没必要我们亲自去做，Summer引入了**ModelGenerator**这个类，你只需要简单配置，然后它就可以根据数据库的表结构自动生成ModelBean、Model和MappingKit，下面是具体的的使用方式
 ```java
 public void generator() throws Exception {
-    DataSource dataSource = DataSourceUtil.getNewDataSource("com.mysql.jdbc.Driver",
+    ConnectionProvider provider = new DefaultConnectionProvider();
+    provider.init("com.mysql.jdbc.Driver",
             "jdbc:mysql://127.0.0.1:3306/summer?characterEncoding=utf8&useSSL=false",
             "root",
             "123456");
@@ -558,7 +563,7 @@ public void generator() throws Exception {
     String modelPackage = "space.wangjiang.summer.test.model";
 
     ModelGenerator generator = new ModelGenerator();
-    generator.setDataSource(dataSource);
+    generator.setConnectionProvider(provider);
     generator.setModelPath(modelPath);
     generator.setModelBeanPath(modelPath + "bean");
     generator.setModelPackage(modelPackage);
@@ -689,7 +694,7 @@ config.addMapping("user", "id", User.class);
 **非常不建议使用带有空格的字段(无论是使用Summer还是其它框架)，Summer设计之初就没考虑这个问题，也没有任何的相关测试，可能会出现意想不到的问题**
 
 ## Plugin(插件)
-Summer提供了插件接口(IPlugin)，并提供了基本的生命周期start()和stop()，分别在Summer启动之后和停止之前调用
+Summer提供了插件接口(Plugin)，并提供了基本的生命周期start()和stop()，分别在Summer启动之后和停止之前调用
 
 当你实现了自己的插件之后，需要在```initPlugin(PluginConfig config)```配置该插件，当Summer启动之后，将会依次启动插件
 ```java

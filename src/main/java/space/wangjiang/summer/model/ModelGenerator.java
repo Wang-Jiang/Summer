@@ -4,12 +4,12 @@ import com.jfinal.template.Engine;
 import com.jfinal.template.Template;
 import space.wangjiang.summer.common.Logger;
 import space.wangjiang.summer.common.ResourceReader;
-import space.wangjiang.summer.model.db.Dialect;
-import space.wangjiang.summer.model.db.MySqlDialect;
+import space.wangjiang.summer.model.dialect.Dialect;
+import space.wangjiang.summer.model.dialect.MySqlDialect;
+import space.wangjiang.summer.model.provider.ConnectionProvider;
 import space.wangjiang.summer.util.FileUtil;
 import space.wangjiang.summer.util.StringUtil;
 
-import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
 import java.sql.*;
@@ -93,7 +93,7 @@ public class ModelGenerator {
     private String modelPath;
     private String modelBeanPath;
 
-    private DataSource dataSource;
+    private ConnectionProvider connectionProvider;
     private Dialect dialect = new MySqlDialect();
 
     /**
@@ -206,24 +206,24 @@ public class ModelGenerator {
 
     private List<String> getAllTableNames() throws SQLException {
         List<String> list = new ArrayList<>();
-        Connection connection = dataSource.getConnection();
+        Connection connection = getConnection();
         PreparedStatement statement = connection.prepareStatement(dialect.getAllTableNameSql());
         ResultSet resultSet = statement.executeQuery();
         while (resultSet.next()) {
             list.add(resultSet.getString(1));
         }
-        DataSourceUtil.close(connection, statement, resultSet);
+        ConnectionUtil.close(connection, statement, resultSet);
         return list;
     }
 
     private String[] getTablePrimaryKey(String tableName) throws SQLException {
         List<String> list = new ArrayList<>();
-        Connection connection = dataSource.getConnection();
+        Connection connection = getConnection();
         ResultSet resultSet = connection.getMetaData().getPrimaryKeys(null, null, tableName);
         while (resultSet.next()) {
             list.add(resultSet.getString(4));
         }
-        DataSourceUtil.close(connection, null, resultSet);
+        ConnectionUtil.close(connection, null, resultSet);
         return list.toArray(new String[list.size()]);
     }
 
@@ -232,14 +232,14 @@ public class ModelGenerator {
      */
     private Map<String, String> getTableColumns(String tableName) throws SQLException {
         Map<String, String> column = new LinkedHashMap<>();
-        Connection connection = dataSource.getConnection();
+        Connection connection = getConnection();
         PreparedStatement statement = connection.prepareStatement(dialect.getTableMetaDataSql(tableName));
         ResultSet resultSet = statement.executeQuery();
         ResultSetMetaData metaData = resultSet.getMetaData();
         for (int i = 1; i <= metaData.getColumnCount(); i++) {
             column.put(metaData.getColumnName(i), metaData.getColumnClassName(i));
         }
-        DataSourceUtil.close(connection, statement, resultSet);
+        ConnectionUtil.close(connection, statement, resultSet);
         return column;
     }
 
@@ -258,6 +258,10 @@ public class ModelGenerator {
 
     public String readResourceFile(String fileName) {
         return new ResourceReader().read(fileName);
+    }
+
+    private Connection getConnection() throws SQLException {
+        return connectionProvider.getConnection();
     }
 
     /**
@@ -332,8 +336,8 @@ public class ModelGenerator {
         this.modelBeanPath = modelBeanPath;
     }
 
-    public void setDataSource(DataSource dataSource) {
-        this.dataSource = dataSource;
+    public void setConnectionProvider(ConnectionProvider connectionProvider) {
+        this.connectionProvider = connectionProvider;
     }
 
     public void setDialect(Dialect dialect) {

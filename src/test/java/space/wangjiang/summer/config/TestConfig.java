@@ -3,6 +3,7 @@ package space.wangjiang.summer.config;
 import space.wangjiang.summer.constant.ConstantConfig;
 import space.wangjiang.summer.lab.RouteMappingPlugin;
 import space.wangjiang.summer.model.ModelConfig;
+import space.wangjiang.summer.model.provider.DruidConnectionProvider;
 import space.wangjiang.summer.plugin.PluginConfig;
 import space.wangjiang.summer.route.RouteConfig;
 import space.wangjiang.summer.form.FormController;
@@ -30,6 +31,7 @@ public class TestConfig extends SummerConfig {
     public void initModel(ModelConfig config) {
         ModelTestUtil.configMySql(config);
         MappingKit.mapping(config);
+        config.setConnectionProvider(new DruidConnectionProvider());
     }
 
     @Override

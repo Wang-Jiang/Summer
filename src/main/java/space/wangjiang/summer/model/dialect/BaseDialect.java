@@ -1,4 +1,4 @@
-package space.wangjiang.summer.model.db;
+package space.wangjiang.summer.model.dialect;
 
 import space.wangjiang.summer.model.ModelMapping;
 import space.wangjiang.summer.util.StringUtil;
