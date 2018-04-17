@@ -2,15 +2,14 @@ package space.wangjiang.summer.controller;
 
 import space.wangjiang.easylogger.EasyLogger;
 import space.wangjiang.easylogger.json.JsonUtil;
-import space.wangjiang.summer.common.Logger;
 import space.wangjiang.summer.common.SummerCommon;
 import space.wangjiang.summer.config.SummerConfig;
 import space.wangjiang.summer.constant.ConstantConfig;
 import space.wangjiang.summer.form.Form;
 import space.wangjiang.summer.route.NotRoute;
-import space.wangjiang.summer.upload.UploadFile;
-import space.wangjiang.summer.upload.UploadRequestWrapper;
+import space.wangjiang.summer.upload.*;
 import space.wangjiang.summer.util.FileUtil;
+import space.wangjiang.summer.util.ListUtil;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -20,8 +19,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.*;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 
@@ -260,14 +257,30 @@ public abstract class Controller {
      */
     @NotRoute
     public void analyzeMultipartRequest() {
-        if (request instanceof UploadRequestWrapper) {
-            //防止多次生成UploadRequestWrapper，多次调用会出错java.io.IOException: Corrupt form data: premature ending
+        ConstantConfig constant = SummerConfig.config.getConstantConfig();
+        analyzeMultipartRequest(constant.getBaseUploadPath(), -1, constant.getUploadFileSizeMax(), null, new DefaultFileRenameStrategy());
+    }
+
+    public void analyzeMultipartRequest(String baseUploadPath, long fileSizeMax, UploadStrategy uploadStrategy, FileRenameStrategy renameStrategy) {
+        analyzeMultipartRequest(baseUploadPath, -1, fileSizeMax, uploadStrategy, renameStrategy);
+    }
+
+    /**
+     * 解析文件请求，你可以传入一些参数去控制上传的文件
+     *
+     * @param baseUploadPath 基础上传路径，支持Web相对路径和绝对磁盘路径
+     * @param sizeMax        总请求的大小
+     * @param fileSizeMax    单个文件最大大小
+     * @param uploadStrategy 上传策略
+     * @param renameStrategy 重名策略
+     */
+    public void analyzeMultipartRequest(String baseUploadPath, long sizeMax, long fileSizeMax, UploadStrategy uploadStrategy, FileRenameStrategy renameStrategy) {
+        if (request instanceof UploadRequest) {
             return;
         }
         try {
-            //装饰者模式，multipart的请求没有办法直接getParameter，全部返回为null
-            request = new UploadRequestWrapper(request);
-        } catch (IOException e) {
+            request = new UploadRequest(request, baseUploadPath, sizeMax, fileSizeMax, uploadStrategy, renameStrategy);
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -275,11 +288,11 @@ public abstract class Controller {
     /**
      * 获取所有的文件列表
      *
-     * @see UploadRequestWrapper
+     * @see UploadRequest
      */
     public List<UploadFile> getFiles() {
         analyzeMultipartRequest();
-        return ((UploadRequestWrapper) request).getFiles();
+        return ((UploadRequest) request).getFiles();
     }
 
     public UploadFile getFile() {
@@ -289,34 +302,19 @@ public abstract class Controller {
     }
 
     public UploadFile getFile(String name) {
-        List<UploadFile> fileList = getFiles();
-        for (UploadFile uploadFile : fileList) {
-            if (uploadFile.getParameterName().equals(name)) {
-                return uploadFile;
-            }
+        List<UploadFile> files = getFiles(name);
+        if (ListUtil.isNotEmpty(files)) {
+            return files.get(0);
         }
         return null;
     }
 
     /**
      * 当一个字段包含多个文件(multiple)
-     * 这个方法有问题，因为COS本身是不支持多文件公用一个字段的
-     * JFinal的COS修复了这个问题，但是会在字段后面追加_1、_2
-     * 导致这个方法只能获取第一个文件
-     * 准备尝试换用其他上传库
-     * 实际上JFinal就根本不支持该方法
      */
-    @Deprecated
     public List<UploadFile> getFiles(String name) {
-        List<UploadFile> allFiles = getFiles();
-        List<UploadFile> result = new ArrayList<>();
-        for (UploadFile file : allFiles) {
-            Logger.debug(file.getParameterName());
-            if (file.getParameterName().equals(name)) {
-                result.add(file);
-            }
-        }
-        return result;
+        analyzeMultipartRequest();
+        return ((UploadRequest) request).getFiles(name);
     }
 
     /**

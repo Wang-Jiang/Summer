@@ -1,5 +1,6 @@
 # Summer
 
+[![JitPack](https://jitpack.io/v/Wang-Jiang/Summer.svg)](https://jitpack.io/#Wang-Jiang/Summer)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](http://www.opensource.org/licenses/mit-license.php)
 
 ## 简介

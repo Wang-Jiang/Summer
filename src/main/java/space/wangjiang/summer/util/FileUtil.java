@@ -1,7 +1,5 @@
 package space.wangjiang.summer.util;
 
-import java.io.*;
-
 /**
  * Created by WangJiang on 2016/7/10.
  */
@@ -71,54 +69,24 @@ public class FileUtil {
         return System.getProperty("java.io.tmpdir");
     }
 
-    public static String readFileToString(File file, String encoding) {
-        StringBuilder sb = new StringBuilder();
-        try (InputStreamReader streamReader = new InputStreamReader(new FileInputStream(file), encoding);
-             BufferedReader reader = new BufferedReader(streamReader)) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sb.append(line);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+    /**
+     * 是否是相对路径
+     */
+    public static boolean isRelativePath(String path) {
+        if (path == null) {
+            return false;
         }
-        return sb.toString();
+        return !isAbsolutePath(path);
     }
 
-    //以下代码修改自Common IO
-
-    public static void write(File file, CharSequence data, String encoding) throws IOException {
-        write(file, data, encoding, false);
-    }
-
-    public static void write(File file, CharSequence data, String encoding, boolean append) throws IOException {
-        String str = data == null ? null : data.toString();
-        writeStringToFile(file, str, encoding, append);
-    }
-
-    public static void writeStringToFile(File file, String data, String encoding, boolean append) throws IOException {
-        try (FileOutputStream out = openOutputStream(file, append)) {
-            if (data != null) {
-                out.write(data.getBytes(encoding));
-            }
+    /**
+     * 是否是绝对路径
+     */
+    public static boolean isAbsolutePath(String path) {
+        if (path == null) {
+            return false;
         }
-    }
-
-    private static FileOutputStream openOutputStream(File file, boolean append) throws IOException {
-        if (file.exists()) {
-            if (file.isDirectory()) {
-                throw new IOException("File '" + file + "' exists but is a directory");
-            }
-            if (!file.canWrite()) {
-                throw new IOException("File '" + file + "' cannot be written to");
-            }
-        } else {
-            File parent = file.getParentFile();
-            if (parent != null && !parent.mkdirs() && !parent.isDirectory()) {
-                throw new IOException("Directory '" + parent + "' could not be created");
-            }
-        }
-        return new FileOutputStream(file, append);
+        return path.startsWith("/") || path.contains(":");
     }
 
 }

@@ -18,6 +18,7 @@ public class TestConfig extends SummerConfig {
     @Override
     public void initConstant(ConstantConfig config) {
         config.setDevMode(true);
+        config.setBaseUploadPath("D:/upload");
     }
 
     @Override

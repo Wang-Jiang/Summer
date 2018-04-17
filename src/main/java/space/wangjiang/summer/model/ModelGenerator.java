@@ -2,12 +2,12 @@ package space.wangjiang.summer.model;
 
 import com.jfinal.template.Engine;
 import com.jfinal.template.Template;
+import org.apache.commons.io.FileUtils;
 import space.wangjiang.summer.common.Logger;
 import space.wangjiang.summer.common.ResourceReader;
 import space.wangjiang.summer.model.dialect.Dialect;
 import space.wangjiang.summer.model.dialect.MySqlDialect;
 import space.wangjiang.summer.model.provider.ConnectionProvider;
-import space.wangjiang.summer.util.FileUtil;
 import space.wangjiang.summer.util.StringUtil;
 
 import java.io.File;
@@ -166,7 +166,7 @@ public class ModelGenerator {
         Template template = Engine.use().getTemplateByString(readResourceFile("ModelBean.enjoy"));
         String result = template.renderToString(data);
         File beanFile = new File(modelBeanPath + "/" + beanName + ".java");
-        FileUtil.write(beanFile, result, "UTF-8");
+        FileUtils.write(beanFile, result, "UTF-8");
     }
 
     private void generateModel(String table) throws IOException {
@@ -181,7 +181,7 @@ public class ModelGenerator {
         File modelFile = new File(modelPath + "/" + modelName + ".java");
         if (!modelFile.exists()) {
             //Model文件已经创建的，就不需要覆盖了
-            FileUtil.write(modelFile, result, "UTF-8");
+            FileUtils.write(modelFile, result, "UTF-8");
         }
     }
 
@@ -201,7 +201,7 @@ public class ModelGenerator {
         Template template = Engine.use().getTemplateByString(readResourceFile("MappingKit.enjoy"));
         String result = template.renderToString(data);
         File modelMappingFile = new File(modelPath + "/MappingKit.java");
-        FileUtil.write(modelMappingFile, result, "UTF-8");
+        FileUtils.write(modelMappingFile, result, "UTF-8");
     }
 
     private List<String> getAllTableNames() throws SQLException {

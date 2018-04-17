@@ -79,11 +79,10 @@
             <scope>provided</scope>
         </dependency>
 
-        <!--原版的COS有问题，不支持一个字段多个file-->
         <dependency>
-            <groupId>com.jfinal</groupId>
-            <artifactId>cos</artifactId>
-            <version>2017.5</version>
+            <groupId>commons-fileupload</groupId>
+            <artifactId>commons-fileupload</artifactId>
+            <version>1.3.3</version>
             <scope>compile</scope>
         </dependency>
 

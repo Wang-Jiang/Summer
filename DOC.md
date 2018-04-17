@@ -213,12 +213,39 @@ render的核心是设置response的ContentType
 * ```getFiles()```获取上传的文件列表，```getFile()```系列方法最终均是调用该方法，上传的文件会自动保存到/upload目录下，如果存在重名文件，Summer会自动给文件重命名(在文件名后面追加1、2、3...)
 * ```renderFile(File file)```下载文件
 
-在上传文件的时候，需要注意如果请求为multipart(form表单使用了```enctype="multipart/form-data"```)，必须先调用```getFile()```系列方法才能使```getPara()```系列方法正常工作(否则将全部获取null)，因为multipart请求需要通过```getFiles()```解析请求，具体内容可以参见```UploadRequestWrapper```
+在上传文件的时候，需要注意如果请求为multipart(form表单使用了```enctype="multipart/form-data"```)，必须先调用```analyzeMultipartRequest()```系列方法才能使```getPara()```系列方法正常工作(否则将全部获取null)，因为multipart请求需要解析请求，具体内容可以参见```UploadRequest```
 
 为了安全考虑，Summer禁止上传JSP或者JSPX文件，当试图上传这类文件时，Summer会报出警告，并直接删除这些文件。如果需要上传此类文件，需要自己实现，或者上传前修改文件后缀，上传完成之后再修改回来
 <div align="center">
 	<img src="screenshot/screenshot-003.png">
 </div>
+
+**FileRenameStrategy(文件重命名策略)** 如果保存文件的路径存在同名文件，可以通过该功能去重命名要保存的文件，具体的使用可以参见DefaultFileRenameStrategy，它提供了一个简单的的重命名功能，在文件名后追加1、2、3
+
+**UploadStrategy(上传策略)** 该功能可以控制是否接受上传的文件，比如只希望接受png图片文件，如下
+```java
+public class PngUploadStrategy implements UploadStrategy {
+    @Override
+    public boolean accept(FileItem fileItem) {
+        if (fileItem.getName().toLowerCase().endsWith(".png")) {
+            return true;
+        }
+        return false;
+    }
+}
+```
+
+**analyzeMultipartRequest(String baseUploadPath, long fileSizeMax, UploadStrategy uploadStrategy, FileRenameStrategy renameStrategy)** 这是用于解析文件请求的方法，你可以传入上传策略和文件重命名策略，来控制上传的内容。需要注意，必须在getFiles()等方法之前调用，并且路由上不应该有AnalyzeFile拦截器，因为它们都会调用默认的解析请求的方式
+
+在test的IndexController中有如下代码
+```java
+analyzeMultipartRequest("upload",
+        4L * 1024 * 1024,
+        new PngUploadStrategy(),
+        new RandomFileRenameStrategy()
+);
+```
+上面的表明将上传的文件保存到web根目录的upload文件夹下，单个文件最大4MB，只允许上传PNG图片，并且文件直接重命名为随机字符串
 
 ## Route(路由)
 > 这个内容是对上面的Controller的一个补充，在Summer中，Route是一个URL到Method的一个映射
@@ -400,7 +427,7 @@ public void registerAction() {
 ### 请求中包含文件
 如果请求中包含文件(multipart类型的表单)，请注意，此时请求是二进制的，必须先解析才可以正常校验表单，否则值全部为null，具体内容可以参见上面Controller中的**File相关操作**的相关内容。下面两种方式都可以
 
-1、先调用```getFile()```解析请求，然后调用```getForm(MyForm.class)```获取表单对象，正常校验判断
+1、先调用```analyzeMultipartRequest()```解析请求，然后调用```getForm(MyForm.class)```获取表单对象，正常校验判断
 
 2、在拦截器上面使用AnalyzeFile拦截器，它会解析请求，这样就可以正常使用@CheckForm()了
 

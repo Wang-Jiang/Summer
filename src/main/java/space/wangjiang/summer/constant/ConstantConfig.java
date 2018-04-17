@@ -1,6 +1,8 @@
 package space.wangjiang.summer.constant;
 
 import space.wangjiang.summer.common.SummerCommon;
+import space.wangjiang.summer.config.SummerConfig;
+import space.wangjiang.summer.util.FileUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,10 +20,31 @@ public class ConstantConfig {
 
     private String encoding = "UTF-8";
 
+    //上传文件相关的配置
+
     /**
-     * 基本的上传文件的位置
+     * 基本的上传文件的位置，该路径是绝对路径
+     *
+     * @see #setBaseUploadPath
      */
-    private String baseUploadPath = "/upload";
+    private String baseUploadPath;
+
+    /**
+     * 上传文件的缓冲区大小
+     */
+    private int uploadSizeThreshold = 4 * 1024;
+
+    /**
+     * 上传的单个文件最大值
+     */
+    private long uploadFileSizeMax = 4L * 1024 * 1024;
+
+    /**
+     * 上传文件的临时文件位置
+     */
+    private String uploadTempFileDir = FileUtil.getSystemTempDir();
+
+    //上传文件相关的配置
 
     private String startLogo = SummerCommon.START_LOGO;
 
@@ -63,7 +86,18 @@ public class ConstantConfig {
         return baseUploadPath;
     }
 
+    /**
+     * 设置保存文件的基础路径
+     * 支持web的相对路径(不要以 "/" 开头)
+     * 支持绝对路径，例如D://upload，或者/home/upload
+     */
     public void setBaseUploadPath(String baseUploadPath) {
+        if (baseUploadPath == null) {
+            throw new RuntimeException("baseUploadPath can not be null");
+        }
+        if (FileUtil.isRelativePath(baseUploadPath)) {
+            baseUploadPath = SummerConfig.config.getServletContext().getRealPath("/" + baseUploadPath);
+        }
         this.baseUploadPath = baseUploadPath;
     }
 
@@ -99,4 +133,27 @@ public class ConstantConfig {
         this.startLogo = startLogo;
     }
 
+    public void setUploadSizeThreshold(int uploadSizeThreshold) {
+        this.uploadSizeThreshold = uploadSizeThreshold;
+    }
+
+    public int getUploadSizeThreshold() {
+        return uploadSizeThreshold;
+    }
+
+    public String getUploadTempFileDir() {
+        return uploadTempFileDir;
+    }
+
+    public void setUploadTempFileDir(String uploadTempFileDir) {
+        this.uploadTempFileDir = uploadTempFileDir;
+    }
+
+    public long getUploadFileSizeMax() {
+        return uploadFileSizeMax;
+    }
+
+    public void setUploadFileSizeMax(long uploadFileSizeMax) {
+        this.uploadFileSizeMax = uploadFileSizeMax;
+    }
 }

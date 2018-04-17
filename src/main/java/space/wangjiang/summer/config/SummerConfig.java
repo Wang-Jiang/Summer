@@ -34,6 +34,8 @@ public abstract class SummerConfig implements Filter {
     //Prop配置文件
     private Prop prop = null;
 
+    private ServletContext servletContext;
+
     /**
      * 加载Properties文件
      */
@@ -64,6 +66,14 @@ public abstract class SummerConfig implements Filter {
     public abstract void initPlugin(PluginConfig config);
 
     /**
+     * 初始化ConstantConfig，设置默认上传参数
+     */
+    private void initConstant() {
+        constantConfig.setBaseUploadPath("upload");
+        initConstant(constantConfig);
+    }
+
+    /**
      * 初始化插件，并启动插件列表
      */
     private void initPlugin() {
@@ -83,9 +93,11 @@ public abstract class SummerConfig implements Filter {
     public void init(FilterConfig filterConfig) {
         //SummerConfig初始化
         config = this;
+        servletContext = filterConfig.getServletContext();
 
         initEasyLogger();
-        initConstant(constantConfig);
+
+        initConstant();
         initRoute(routeConfig);
         initModel(modelConfig);
         initPlugin();
@@ -175,6 +187,10 @@ public abstract class SummerConfig implements Filter {
     public String getProperty(String key) {
         if (prop == null) return null;
         return prop.getStr(key);
+    }
+
+    public ServletContext getServletContext() {
+        return servletContext;
     }
 
     /**

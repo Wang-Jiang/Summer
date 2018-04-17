@@ -8,19 +8,25 @@ import java.io.File;
  */
 public class UploadFile {
 
-    private File file;
     private String parameterName;
+    private String fileName; //上传的原始文件名，因为重名策略，实际的文件名可能会变动
+    private File file;
 
-    public UploadFile(File file, String parameterName) {
-        this.file = file;
+    public UploadFile(String parameterName, String fileName, File file) {
         this.parameterName = parameterName;
-    }
-
-    public File getFile() {
-        return file;
+        this.fileName = fileName;
+        this.file = file;
     }
 
     public String getParameterName() {
         return parameterName;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public File getFile() {
+        return file;
     }
 }
