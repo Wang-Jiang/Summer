@@ -5,6 +5,7 @@ import space.wangjiang.summer.config.SummerConfig;
 import space.wangjiang.summer.route.Route;
 
 import javax.servlet.http.HttpServletRequest;
+import java.lang.reflect.Method;
 import java.util.Enumeration;
 
 /**
@@ -19,22 +20,32 @@ public class Logger {
         }
     }
 
+    public static void debug(String tag, String msg) {
+        if (SummerConfig.config == null || SummerConfig.config.getConstantConfig().isDevMode()) {
+            System.out.println("DEBUG/" + tag + " : " + msg);
+        }
+    }
+
     public static void complete() {
         if (SummerConfig.config == null || SummerConfig.config.getConstantConfig().isDevMode()) {
             System.out.println("COMPLETE Y(^_^)Y");
         }
     }
 
+    public static void printRequestInfo(HttpServletRequest request, Route route, long startTime) {
+        printRequestInfo(request, route.getControllerClass(), route.getMethod(), startTime);
+    }
+
     /**
      * 打印请求信息
      */
-    public static void printRequestInfo(HttpServletRequest request, Route route, long startTime) {
+    public static void printRequestInfo(HttpServletRequest request, Class controllerClass, Method method, long startTime) {
         Enumeration<String> names = request.getParameterNames();
         StringBuilder msg = new StringBuilder();
         msg.append("Request : ").append(request.getRequestURI()).append("\n");
-        msg.append("Method : ").append(route.getControllerClass().getName())
-                .append(".").append(route.getMethod().getName())
-                .append("(").append(route.getControllerClass().getSimpleName()).append(".java:1)\n");
+        msg.append("Method : ").append(controllerClass.getName())
+                .append(".").append(method.getName())
+                .append("(").append(controllerClass.getSimpleName()).append(".java:1)\n");
         msg.append("┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈\n");
         while (names.hasMoreElements()) {
             String name = names.nextElement();

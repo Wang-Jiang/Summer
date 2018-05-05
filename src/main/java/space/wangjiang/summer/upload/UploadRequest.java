@@ -104,14 +104,15 @@ public class UploadRequest extends HttpServletRequestWrapper {
      * 处理表单字段
      */
     private void analyzeFormParameterMap(Map<String, List<FileItem>> map) throws Exception {
+        String encoding = SummerConfig.config.getConstantConfig().getEncoding();
         for (Map.Entry<String, List<FileItem>> entry : map.entrySet()) {
             String name = entry.getKey();
             List<String> strValues = new ArrayList<>();
             List<UploadFile> fileValues = new ArrayList<>();
             for (FileItem item : entry.getValue()) {
                 if (item.isFormField()) {
-                    //普通的表单字段
-                    strValues.add(item.getString());
+                    //普通的表单字段，如果不设置编码，默认是ISO-8859-1
+                    strValues.add(item.getString(encoding));
                     continue;
                 }
                 //文件表单

@@ -6,13 +6,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Created by WangJiang on 2017/9/30.
- * 移除拦截器的注解，支持类和方法
+ * Created by WangJiang on 2018/5/5.
+ * AOP注解，用于在路由方法调用后执行拦截器
  */
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Remove {
+public @interface After {
 
-    Class<? extends Interceptor>[] value() default {};
+    Class<? extends Interceptor>[] value();
 
 }

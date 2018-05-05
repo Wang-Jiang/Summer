@@ -1,17 +1,17 @@
 package space.wangjiang.summer.config;
 
 import space.wangjiang.summer.constant.ConstantConfig;
-import space.wangjiang.summer.lab.RouteMappingPlugin;
-import space.wangjiang.summer.model.ModelConfig;
-import space.wangjiang.summer.model.provider.DruidConnectionProvider;
-import space.wangjiang.summer.plugin.PluginConfig;
-import space.wangjiang.summer.route.RouteConfig;
-import space.wangjiang.summer.form.FormController;
 import space.wangjiang.summer.controller.IndexController;
 import space.wangjiang.summer.controller.RESTfulApiController;
+import space.wangjiang.summer.form.FormController;
+import space.wangjiang.summer.lab.RouteMappingPlugin;
 import space.wangjiang.summer.model.MappingKit;
+import space.wangjiang.summer.model.ModelConfig;
 import space.wangjiang.summer.model.ModelTestUtil;
+import space.wangjiang.summer.model.provider.DruidConnectionProvider;
+import space.wangjiang.summer.plugin.PluginConfig;
 import space.wangjiang.summer.plugin.TestPlugin;
+import space.wangjiang.summer.route.RouteConfig;
 
 public class TestConfig extends SummerConfig {
 

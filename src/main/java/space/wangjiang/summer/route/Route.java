@@ -3,6 +3,7 @@ package space.wangjiang.summer.route;
 import space.wangjiang.easylogger.EasyLogger;
 import space.wangjiang.summer.aop.*;
 import space.wangjiang.summer.common.Logger;
+import space.wangjiang.summer.config.SummerConfig;
 import space.wangjiang.summer.controller.Controller;
 import space.wangjiang.summer.form.CheckForm;
 import space.wangjiang.summer.form.Form;
@@ -19,8 +20,7 @@ import java.util.regex.Pattern;
 
 /**
  * Created by WangJiang on 2017/9/10.
- * 这个是细化的路由规则
- * URL-->METHOD
+ * 路由:URL-->METHOD
  */
 public class Route {
 
@@ -32,7 +32,8 @@ public class Route {
     private boolean isParamUrl;  //是否是参数Url
     private List<String> params; //参数的列表 userId blogId等等
 
-    private List<Interceptor> interceptors = new ArrayList<>();  //所有的拦截器
+    private List<Interceptor> beforeInterceptors = new ArrayList<>();  //所有的Before拦截器
+    private List<Interceptor> afterInterceptors = new ArrayList<>();   //所有的After拦截器
 
     /**
      * 精准路由，精准路由的正则化就是本身
@@ -87,47 +88,56 @@ public class Route {
             }
         }
 
-        //处理类上的Before注解
-        Before before = controllerClass.getAnnotation(Before.class);
-        if (before != null) {
-            addInterceptors(before.value());
-        }
-
-        //处理方法上的拦截器注解，需要注意的是，Remove和Before的顺序很关键，比如
-        // @Remove()
-        // @Before(GET.class)
+        //处理AOP注解，需要注意的是，Remove和Before的顺序很关键，比如
+        //@Remove()
+        //@Before(GET.class)
         //表示的就是先移除所有的拦截器，再加上GET拦截器
-        Annotation[] annotations = method.getAnnotations();
+
+        //处理类上的AOP注解
+        processAopAnnotations(controllerClass.getAnnotations());
+        //处理方法上的AOP注解，
+        processAopAnnotations(method.getAnnotations());
+
+        //Dev模式时，添加Dev拦截器，输出请求的参数和方法执行时间
+        if (SummerConfig.config.getConstantConfig().isDevMode()) {
+            beforeInterceptors.add(0, InterceptorManager.getInstance(DevInterceptor.class));
+            afterInterceptors.add(InterceptorManager.getInstance(DevInterceptor.class));
+        }
+    }
+
+    /**
+     * AOP注解可以用于类上和方法上面
+     */
+    private void processAopAnnotations(Annotation[] annotations) {
         for (Annotation annotation : annotations) {
             if (annotation instanceof Remove) {
                 Class<? extends Interceptor>[] interceptorClasses = ((Remove) annotation).value();
                 if (interceptorClasses.length == 0) {
                     //默认清除所有拦截器
-                    interceptors.clear();
+                    beforeInterceptors.clear();
                 }
                 for (Class<? extends Interceptor> clazz : interceptorClasses) {
-                    interceptors.remove(InterceptorManager.getInstance(clazz));
+                    beforeInterceptors.remove(InterceptorManager.getInstance(clazz));
                 }
             }
-
+            //添加Before拦截器
             if (annotation instanceof Before) {
-                addInterceptors(((Before) annotation).value());
+                addInterceptors(beforeInterceptors, ((Before) annotation).value());
+            }
+            //添加After拦截器
+            if (annotation instanceof After) {
+                addInterceptors(afterInterceptors, ((After) annotation).value());
             }
         }
-
-//        if (interceptors.size() > 0) {
-//            Logger.debug("拦截列表:" + url);
-//            for (Interceptor interceptor : interceptors) {
-//                System.out.print("  " + interceptor.getClass().getSimpleName());
-//            }
-//            System.out.println();
-//        }
     }
 
     /**
-     * 添加拦截器
+     * 获取classes的拦截器实例，放到拦截器列表
+     *
+     * @param interceptors 拦截器列表
+     * @param classes      拦截器的类
      */
-    private void addInterceptors(Class<? extends Interceptor>[] classes) {
+    private void addInterceptors(List<Interceptor> interceptors, Class<? extends Interceptor>[] classes) {
         for (Class<? extends Interceptor> clazz : classes) {
             //Interceptor是单例的
             Interceptor interceptor = InterceptorManager.getInstance(clazz);
@@ -142,7 +152,7 @@ public class Route {
      * 调用控制器的方法
      */
     public void invoke(HttpServletRequest request, HttpServletResponse response) throws IllegalAccessException, InstantiationException, InvocationTargetException {
-        //先实例化controller
+        //实例化controller
         Controller controller = getControllerClass().newInstance();
         controller.init(request, response, baseViewPath);
 
@@ -157,14 +167,10 @@ public class Route {
             }
         }
 
-        //处理拦截器
         Bundle bundle = new Bundle(controller, method, url);
-        for (Interceptor interceptor : interceptors) {
-            if (!interceptor.handle(bundle)) {
-                //有拦截器失败了，直接返回
-                EasyLogger.error(String.format("拦截器%s返回False", interceptor.getClass().getSimpleName()));
-                return;
-            }
+        //处理Before拦截器
+        if (!handleInterceptors(bundle, beforeInterceptors)) {
+            return;
         }
 
         //处理@CheckForm注解，如果通过，将表单放到Attribute中
@@ -182,6 +188,25 @@ public class Route {
 
         //最核心的调用
         method.invoke(controller);
+
+        //处理After拦截器
+        if (!handleInterceptors(bundle, afterInterceptors)) {
+            return;
+        }
+    }
+
+    /**
+     * 如果所有拦截器都处理完成，返回true
+     */
+    private boolean handleInterceptors(Bundle bundle, List<Interceptor> interceptors) {
+        for (Interceptor interceptor : interceptors) {
+            if (!interceptor.handle(bundle)) {
+                //有拦截器失败了，直接返回
+                EasyLogger.error(String.format("拦截器%s返回False", interceptor.getClass().getSimpleName()));
+                return false;
+            }
+        }
+        return true;
     }
 
     //getter方法

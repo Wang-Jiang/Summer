@@ -117,7 +117,6 @@ public abstract class SummerConfig implements Filter {
      */
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        long startTime = System.currentTimeMillis();
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
 
@@ -147,9 +146,6 @@ public abstract class SummerConfig implements Filter {
             ErrorController errorController = new ErrorController();
             errorController.init(request, response, null);
             errorController.render500();
-        }
-        if (constantConfig.isDevMode()) {
-            Logger.printRequestInfo(request, route, startTime);
         }
     }
 
