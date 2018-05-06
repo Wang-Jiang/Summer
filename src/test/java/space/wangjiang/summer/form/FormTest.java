@@ -47,7 +47,7 @@ public class FormTest extends BaseTest {
     @Test
     public void myForm5() {
         Param param = new Param();
-        param.put("name", "");
+//        param.put("name", "");
         param.put("age", "12");
         Assert.assertEquals(MyForm.ERROR_MSG_NAME_REQUIRED, get(myFormUrl, param));
     }
@@ -64,7 +64,7 @@ public class FormTest extends BaseTest {
     public void personTest() {
         Param param = new Param();
         param.put("gender", "男");
-        param.put("age", 10);
+        param.put("age", "");
         param.put("name", "Jack");
         get(baseFormUrl + "person", param);
     }

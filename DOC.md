@@ -398,8 +398,8 @@ public class RegisterForm extends Form {
 
 需要注意的是，上面的注解都是在String的基础上进行判断的。关于Required需要注意，空字符串是被认为是有值的，比如URL是```?age=&name=abc```，那么Summer会认为age有值，并开始校验该值是否是一个合法的数字
 
-### 不建议Form中出现非String类型的字段
-虽然Summer支持原始类型以及对应的封装类字段，但是因为所有的校验注解都是基于String的，原始类型的字段可能会导致校验结果和预期的不同，例如上面的age如果是int类型，在实例化Form之后，初始化为0，显然是一个有效的数字，所以即便表单没有age字段，age也会认为是有值的。关于这个问题，Summer在未来可能会移除掉对非String字段的支持
+### 不要在Form中出现非String类型的字段
+Summer不支持Form中出现非String类型的字段，因为所有的校验注解都是基于String的，非String类型的字段会增加验证的复杂度
 
 ### 如何激发表单的验证
 1、你可以在Controller的方法中调用```getForm(RegisterForm.class)```，它会自动实例化一个RegisterForm，然后调用```isValid()```验证表单，验证失败会返回false，同时可以调用```getErrorMsg()```获取错误信息，如下

@@ -10,7 +10,7 @@ public class PersonForm extends GenderForm {
     @Required(errorMsg = "姓名是必填项")
     private String name;
 
-    @Type(type = Type.TYPE.NUMBER, errorMsg = "年龄需要时数字")
+    @Type(type = Type.TYPE.NUMBER, errorMsg = "年龄需要是有效的数字")
     private String age;
 
     public String getName() {

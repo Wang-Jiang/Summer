@@ -10,8 +10,10 @@ import java.util.Set;
 
 /**
  * Created by WangJiang on 2017/9/9.
- * 这个是用于表单验证
- * TODO 直接禁止在Form中除String以外的类型，包括int、File等，分情况处理非String类型的字段会增加验证的复杂度
+ * 表单，用于校验提交的数据是否合法
+ * 表单字段是指非静态和非final的字段，包括Form类定义的字段(私有、公开等)和从父类继承的公开字段
+ * 表单的字段不支持非String类型的字段，如果需要int、double等，可以在getter方法处理
+ * 非String类型的字段会增加验证的复杂度，因此直接禁止非String类型字段
  */
 public abstract class Form {
 
@@ -24,7 +26,7 @@ public abstract class Form {
     private String errorMsg = null;
 
     /**
-     * 获取当前类声明的属性，和父类的public属性
+     * 获取当前类声明的字段，和父类的public字段
      * 不获取静态和final字段
      */
     public Set<Field> getAllFormFields() {
@@ -56,48 +58,47 @@ public abstract class Form {
         Set<Field> fields = getAllFormFields();
         for (Field field : fields) {
             field.setAccessible(true);
-            Object object;
+            String value;
             try {
-                object = field.get(this);
+                value = (String) field.get(this);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
                 errorMsg = e.getMessage();
                 return false;
             }
             Required required = field.getAnnotation(Required.class);
-            //如果不是required并且object == null，直接返回true
-            if (required == null && object == null) {
+            if (required == null && value == null) {
                 continue; //该字段不是必填并且为null，跳过该字段检查
             }
-            if (!isRequiredValid(required, object)) {
+            if (!isRequiredValid(required, value)) {
                 errorMsg = required.errorMsg();
                 return false;
             }
 
             //必须先校验required，因为如果不是必填的，当其值为空的时候就不需要检查了
             Type type = field.getAnnotation(Type.class);
-            if (!isTypeValid(type, object)) {
+            if (!isTypeValid(type, value)) {
                 errorMsg = type.errorMsg();
                 return false;
             }
 
             //长度判断
             Length length = field.getAnnotation(Length.class);
-            if (!isLengthValid(length, object)) {
+            if (!isLengthValid(length, value)) {
                 errorMsg = length.errorMsg();
                 return false;
             }
 
             //In判断
             In in = field.getAnnotation(In.class);
-            if (!isInValid(in, object)) {
+            if (!isInValid(in, value)) {
                 errorMsg = in.errorMsg();
                 return false;
             }
 
             //正则校验
             Regex regex = field.getAnnotation(Regex.class);
-            if (!isRegexValid(regex, object)) {
+            if (!isRegexValid(regex, value)) {
                 errorMsg = regex.errorMsg();
                 return false;
             }
@@ -114,7 +115,7 @@ public abstract class Form {
     /**
      * 是否是必填
      */
-    private boolean isRequiredValid(Required required, Object value) {
+    private boolean isRequiredValid(Required required, String value) {
         if (required == null) {
             return true;
         }
@@ -122,35 +123,33 @@ public abstract class Form {
         return value != null;
     }
 
-    private boolean isTypeValid(Type type, Object value) {
+    private boolean isTypeValid(Type type, String value) {
         if (type == null) {
             return true;
         }
-        String strValue = String.valueOf(value);
         switch (type.type()) {
             case TEXT:
                 //TEXT没什么好判断的，直接返回true
                 return true;
             case EMAIL:
-                return RegexUtil.isEmail(strValue);
+                return RegexUtil.isEmail(value);
             case NUMBER:
-                return RegexUtil.isNumber(strValue);
+                return RegexUtil.isNumber(value);
             case TEL:
-                return RegexUtil.isTel(strValue);
+                return RegexUtil.isTel(value);
             case URL:
-                return RegexUtil.isURL(strValue);
+                return RegexUtil.isURL(value);
         }
         return true;
     }
 
-    private boolean isLengthValid(Length length, Object value) {
+    private boolean isLengthValid(Length length, String value) {
         if (length == null) {
             return true;
         }
-        String strValue = String.valueOf(value);
         int minLength = length.min();
         int maxLength = length.max();
-        return strValue.length() >= minLength && strValue.length() <= maxLength;
+        return value.length() >= minLength && value.length() <= maxLength;
     }
 
     private boolean isInValid(In in, Object value) {
@@ -158,18 +157,17 @@ public abstract class Form {
             return true;
         }
         String[] array = in.in().split(",");
-        String strValue = String.valueOf(value);
         for (String item : array) {
-            if (item.equals(strValue)) return true;
+            if (item.equals(value)) return true;
         }
         return false;
     }
 
-    private boolean isRegexValid(Regex regex, Object value) {
+    private boolean isRegexValid(Regex regex, String value) {
         if (regex == null) {
             return true;
         }
-        return RegexUtil.isMatch(regex.regex(), String.valueOf(value));
+        return RegexUtil.isMatch(regex.regex(), value);
     }
 
     /**
@@ -182,42 +180,11 @@ public abstract class Form {
             Set<Field> fields = form.getAllFormFields();
             for (Field field : fields) {
                 field.setAccessible(true);
-                //赋值
-                setFieldValue(form, field, controller.getPara(field.getName()));
+                field.set(form, controller.getPara(field.getName()));
             }
             return form;
         } catch (InstantiationException | IllegalAccessException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * 判断Field的类型赋值
-     * TODO 准备让Form不再支持非String类型的
-     */
-    private static void setFieldValue(Object object, Field field, String value) throws IllegalAccessException {
-        if (value == null || value.length() == 0) {
-            return;
-        }
-        Class type = field.getType();
-        if (type == Byte.TYPE) {
-            field.setByte(object, Byte.parseByte(value));
-        } else if (type == Character.TYPE) {
-            field.setChar(object, value.charAt(0));
-        } else if (type == Short.TYPE) {
-            field.setShort(object, Short.parseShort(value));
-        } else if (type == Integer.TYPE) {
-            field.setInt(object, Integer.parseInt(value));
-        } else if (type == Long.TYPE) {
-            field.setLong(object, Long.parseLong(value));
-        } else if (type == Float.TYPE) {
-            field.setFloat(object, Float.parseFloat(value));
-        } else if (type == Double.TYPE) {
-            field.setDouble(object, Double.parseDouble(value));
-        } else if (type == Boolean.TYPE) {
-            field.setBoolean(object, Boolean.parseBoolean(value));
-        } else {
-            field.set(object, value);
         }
     }
 
