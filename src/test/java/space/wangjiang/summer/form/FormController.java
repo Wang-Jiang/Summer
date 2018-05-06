@@ -11,6 +11,7 @@ import space.wangjiang.summer.upload.UploadFile;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 表单的测试
@@ -40,6 +41,16 @@ public class FormController extends Controller {
     @CheckForm(GenderForm.class)
     public void gender() {
         renderText(MyForm.SUCCESS);
+    }
+
+    @CheckForm(PersonForm.class)
+    public void person() {
+        PersonForm form = getForm();
+        Map<String, String> map=new HashMap<>();
+        map.put("gender", form.gender);
+        map.put("age", form.getAge());
+        map.put("name", form.getName());
+        renderJson(map);
     }
 
 }

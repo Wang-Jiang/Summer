@@ -1,9 +1,12 @@
 package space.wangjiang.summer.form;
 
 import space.wangjiang.summer.controller.Controller;
+import space.wangjiang.summer.util.ReflectUtil;
 import space.wangjiang.summer.util.RegexUtil;
 
 import java.lang.reflect.Field;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * Created by WangJiang on 2017/9/9.
@@ -21,11 +24,36 @@ public abstract class Form {
     private String errorMsg = null;
 
     /**
+     * 获取当前类声明的属性，和父类的public属性
+     * 不获取静态和final字段
+     */
+    public Set<Field> getAllFormFields() {
+        Set<Field> fields = new LinkedHashSet<>();
+        for (Field field : getClass().getDeclaredFields()) {
+            if (isValidFormField(field)) {
+                fields.add(field);
+            }
+        }
+        for (Field field : getClass().getFields()) {
+            if (isValidFormField(field)) {
+                fields.add(field);
+            }
+        }
+        return fields;
+    }
+
+    /**
+     * 是否是有效的表单字段
+     */
+    private boolean isValidFormField(Field field) {
+        return !ReflectUtil.isStatic(field) && !ReflectUtil.isFinal(field);
+    }
+
+    /**
      * 好吧，依旧是反射实现的
      */
     public boolean isValid() {
-        Class formClass = getClass();
-        Field[] fields = formClass.getDeclaredFields();//TODO 改为获取所有的字段，现在是不能获取继承的字段
+        Set<Field> fields = getAllFormFields();
         for (Field field : fields) {
             field.setAccessible(true);
             Object object;
@@ -151,7 +179,7 @@ public abstract class Form {
     public static <T extends Form> T getNewForm(Controller controller, Class<T> formClass) {
         try {
             T form = formClass.newInstance();
-            Field[] fields = formClass.getDeclaredFields();//TODO 这里也是，没有办法获取父类的字段
+            Set<Field> fields = form.getAllFormFields();
             for (Field field : fields) {
                 field.setAccessible(true);
                 //赋值

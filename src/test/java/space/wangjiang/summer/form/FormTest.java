@@ -2,13 +2,14 @@ package space.wangjiang.summer.form;
 
 import org.junit.Assert;
 import org.junit.Test;
-import space.wangjiang.summer.form.MyForm;
+import space.wangjiang.easylogger.EasyLogger;
 import space.wangjiang.summer.test.BaseTest;
 import space.wangjiang.summer.test.Param;
 
 public class FormTest extends BaseTest {
 
-    private String myFormUrl = "http://127.0.0.1:8080/form/myForm";
+    private String baseFormUrl = "http://127.0.0.1:8080/form/";
+    private String myFormUrl = baseFormUrl + "myForm";
 
     @Test
     public void myForm1() {
@@ -57,6 +58,22 @@ public class FormTest extends BaseTest {
         param.put("name", "JACK");
         param.put("age", "+12");
         Assert.assertEquals(MyForm.ERROR_MSG_AGE_TYPE, get(myFormUrl, param));
+    }
+
+    @Test
+    public void personTest() {
+        Param param = new Param();
+        param.put("gender", "男");
+        param.put("age", 10);
+        param.put("name", "Jack");
+        get(baseFormUrl + "person", param);
+    }
+
+    @Test
+    public void formTest() {
+        PersonForm personForm = new PersonForm();
+        EasyLogger.debug(personForm.getAllFormFields());
+//        EasyLogger.debug(personForm.getClass().getFields());
     }
 
 }

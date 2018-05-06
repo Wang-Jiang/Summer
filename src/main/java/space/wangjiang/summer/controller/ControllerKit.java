@@ -23,10 +23,11 @@ public class ControllerKit {
         Method[] methods = clazz.getMethods();
         for (Method method : methods) {
             //通过反射，获取类定义的公有的无参数方法，不是静态的，并且没有标记NotRoute的注解
+            int modifiers = method.getModifiers();
             if (method.getParameterCount() == 0
-                    && method.getModifiers() == Modifier.PUBLIC
+                    && Modifier.isPublic(modifiers)
                     && method.getReturnType() == Void.TYPE
-                    && method.getModifiers() != Modifier.STATIC
+                    && !Modifier.isStatic(modifiers)
                     && method.getAnnotation(NotRoute.class) == null) {
                 list.add(method);
             }
