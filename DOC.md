@@ -464,10 +464,6 @@ Model是一个相当重要的内容，它提供了操作数据库的功能
 
 Summer的Model受JFinal影响非常大，我个人很喜欢直接写SQL，简单粗暴，像Django那样的ORM框架设计，感觉手脚被绑住一样，JPA虽然是很赞的设计，但是面对复杂查询，表现不是很理想
 
-目前Summer的数据库还是相当简陋
-* 不支持事务操作
-* 不支持缓存
-
 ### ModelConfig
 在使用Model功能之前，需要配置数据库的JDBC驱动、JDBCUrl、用户名和密码，在你的Config类中的```initModel()```方法中添加类似于如下内容(还需要在pom.xml中引入相应的JDBC驱动)
 ```java
@@ -652,6 +648,27 @@ print("count:" + (Integer) user.get("count(*)"));
 ```
 
 这种错误常常在获取count()、sum()等等的时候出现，很烦人，为了解决这种问题，Model的getInt等方法先将对象转化为Number类型，再获取相应的intValue()、longValue()等等
+
+### 数据库事务
+Summer支持数据库事务，如下所示，实现Atom的run()方法，写上需要事务处理的代码。如果run()方法内部出现异常或者返回false，会自动回滚
+```java
+TransactionKit.transaction(Connection.TRANSACTION_READ_COMMITTED, new Atom() {
+    @Override
+    public boolean run() {
+        User.DAO.insertNewUser();
+        return true;
+    }
+});
+```
+
+同时还有@Transaction，这个注解用在路由方法上，路由方法内部会直接支持事务操作，当路由方法内部出现异常之后，会自动回滚，并向客户端返回500状态
+```java
+@Transaction
+public void index() {
+    User.DAO.insertNewUser();
+    renderText("事务操作完成");
+}
+```
 
 ### Dialect(SQL方言)
 因为不同的数据库对SQL的支持并不相同，为了兼容不同的SQL语法，Summer使用Dialect(方言)这一概念。Summer内置了MySql(MySqlDialect)和Sqlite(SqliteDialect)的方言，为了方便扩展其它数据库，可以自己实现Dialect接口

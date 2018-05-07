@@ -7,6 +7,9 @@ import space.wangjiang.summer.config.SummerConfig;
 import space.wangjiang.summer.controller.Controller;
 import space.wangjiang.summer.form.CheckForm;
 import space.wangjiang.summer.form.Form;
+import space.wangjiang.summer.model.transaction.Atom;
+import space.wangjiang.summer.model.transaction.Transaction;
+import space.wangjiang.summer.model.transaction.TransactionKit;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -186,8 +189,24 @@ public class Route {
             request.setAttribute(Form.ATTRIBUTE_FORM_NAME, form);
         }
 
-        //最核心的调用
-        method.invoke(controller);
+        Transaction transaction = method.getAnnotation(Transaction.class);
+        if (transaction != null) {
+            //事务处理
+            boolean result = TransactionKit.transaction(transaction.value(), new Atom() {
+                @Override
+                public boolean run() throws Exception {
+                    //最核心的调用
+                    method.invoke(controller);
+                    return true;
+                }
+            });
+            if (!result) {
+                controller.render500(); //事务失败，直接当做500情况
+            }
+        } else {
+            //非事务处理
+            method.invoke(controller);
+        }
 
         //处理After拦截器
         if (!handleInterceptors(bundle, afterInterceptors)) {

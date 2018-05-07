@@ -2,6 +2,8 @@ package space.wangjiang.summer.util;
 
 import org.junit.Test;
 
+import java.util.regex.Pattern;
+
 /**
  * Created by WangJiang on 2017/10/2.
  */
@@ -52,6 +54,17 @@ public class RegexUtilTest {
         assert !RegexUtil.isMobileExact("110");
         assert !RegexUtil.isMobileExact("11000511100");
         assert !RegexUtil.isMobileExact("12345678902455555");
+    }
+
+    /**
+     * 有缺陷的SQL在匹配字符串的时候会非常消耗资源，例如下面的正则表达式会陷入死循环
+     */
+    @Test
+    public void reDosTest() {
+        String email = "asetryinvdrgeeaedcfdsda";
+        String e = "^(\\w+((-\\w+)|(.\\w+))*)+\\w+((-\\w+)|(.\\w+))*\\@[A-Za-z0-9]+((.|-)[A-Za-z0-9]+)*.[A-Za-z0-9]+$";
+        boolean b = Pattern.matches(e, email);
+        System.out.println(b);
     }
 
 }

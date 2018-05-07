@@ -16,6 +16,7 @@ public class ModelTestUtil {
         ModelConfig config = new ModelConfig();
         configMySql(config);
         config.setConnectionProvider(new DruidConnectionProvider());
+//        config.setConnectionProvider(new DefaultConnectionProvider());
         return config;
     }
 

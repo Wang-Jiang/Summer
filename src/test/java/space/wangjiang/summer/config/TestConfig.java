@@ -12,6 +12,7 @@ import space.wangjiang.summer.model.provider.DruidConnectionProvider;
 import space.wangjiang.summer.plugin.PluginConfig;
 import space.wangjiang.summer.plugin.TestPlugin;
 import space.wangjiang.summer.route.RouteConfig;
+import space.wangjiang.summer.transaction.TransactionController;
 
 public class TestConfig extends SummerConfig {
 
@@ -26,6 +27,7 @@ public class TestConfig extends SummerConfig {
         config.addRoute("/", IndexController.class);
         config.addRoute("/api", RESTfulApiController.class);
         config.addRoute("/form", FormController.class);
+        config.addRoute("/transaction", TransactionController.class);
     }
 
     @Override

@@ -6,7 +6,9 @@ import space.wangjiang.summer.model.provider.ConnectionProvider;
 import space.wangjiang.summer.model.provider.DefaultConnectionProvider;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,6 +24,13 @@ public class ModelConfig {
     private String password = null;
     private Dialect dialect = new MySqlDialect();   //默认方言是mysql
     private ConnectionProvider connectionProvider = new DefaultConnectionProvider();  //连接提供器
+
+    /**
+     * 用于实现数据库事务
+     * getConnection方法会优先从threadLocal中获取连接，如果没有才会从connectionProvider中获取
+     * 参见transaction相关代码
+     */
+    private final ThreadLocal<Connection> threadLocal = new ThreadLocal<>();
 
     /**
      * 这个是为了解决在非Web环境下使用Model功能
@@ -117,12 +126,35 @@ public class ModelConfig {
         return connectionProvider;
     }
 
+    /**
+     * 获取数据库连接，如果threadLocal存在直接返回，用于支持数据库实务操作
+     */
     public Connection getConnection() throws SQLException {
+        Connection connection = threadLocal.get();
+        if (connection != null) return connection;
         return connectionProvider.getConnection();
     }
 
     public void destroy() {
         connectionProvider.destroy();
+    }
+
+    /**
+     * 用于支持数据库事务操作
+     */
+    public void setThreadLocalConnection(Connection connection) {
+        threadLocal.set(connection);
+    }
+
+    public Connection getThreadLocalConnection() {
+        return threadLocal.get();
+    }
+
+    /**
+     * 当事务提交或者回滚完成之后，需要及时移除，否则会内存泄露
+     */
+    public void removeThreadLocalConnection() {
+        threadLocal.remove();
     }
 
 }
