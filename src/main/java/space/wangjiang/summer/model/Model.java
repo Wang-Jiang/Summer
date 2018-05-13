@@ -135,7 +135,17 @@ public class Model<M extends Model> implements IJson {
      * Summer未来或许会参考这种方式
      */
     public boolean update() {
-        //如果没有主键值，抛出错误
+        checkPrimaryKeyNotNull();
+        List<Object> params = new ArrayList<>();
+        String sql = getDialect().buildUpdateSql(getModelMapping(), attrs, params);
+        Logger.debug("update:" + sql);
+        return executeUpdate(sql, params.toArray());
+    }
+
+    /**
+     * 判断主键中是否包含null
+     */
+    private void checkPrimaryKeyNotNull() {
         String[] primaryKey = getPrimaryKey();
         for (String key : primaryKey) {
             Object value = get(key);
@@ -143,10 +153,6 @@ public class Model<M extends Model> implements IJson {
                 throw new RuntimeException(String.format("Primary key '%s' cannot be NULL.", key));
             }
         }
-        List<Object> params = new ArrayList<>();
-        String sql = getDialect().buildUpdateSql(getModelMapping(), attrs, params);
-        Logger.debug("update:" + sql);
-        return executeUpdate(sql, params.toArray());
     }
 
     /**
@@ -196,14 +202,18 @@ public class Model<M extends Model> implements IJson {
         return (M) this;
     }
 
-    //clear方法
+    /**
+     * 清空所有值
+     */
     @SuppressWarnings("unchecked")
     public M clear() {
         attrs.clear();
         return (M) this;
     }
 
-    //Keep方法
+    /**
+     * 清除除attr以外的所有值
+     */
     @SuppressWarnings("unchecked")
     public M keep(String attr) {
         Object value = attrs.get(attr);

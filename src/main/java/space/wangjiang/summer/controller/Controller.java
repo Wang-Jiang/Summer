@@ -73,21 +73,41 @@ public abstract class Controller {
         return value;
     }
 
-    public int getParaToInt(String name) {
-        return Integer.parseInt(request.getParameter(name));
+    public Integer getParaToInt(String name) {
+        return getParaToInt(name, null);
     }
 
-    public int getParaToInt(String name, int defaultValue) {
+    public Integer getParaToInt(String name, Integer defaultValue) {
         String value = request.getParameter(name);
         if (value == null) return defaultValue;
         return Integer.parseInt(value);
     }
 
-    public boolean getParaToBool(String name) {
-        return Boolean.parseBoolean(request.getParameter(name));
+    public Long getParaToLong(String name) {
+        return getParaToLong(name, null);
     }
 
-    public boolean getParaToBool(String name, boolean defaultValue) {
+    public Long getParaToLong(String name, Long defaultValue) {
+        String value = request.getParameter(name);
+        if (value == null) return defaultValue;
+        return Long.parseLong(value);
+    }
+
+    public Double getParaToDouble(String name) {
+        return getParaToDouble(name, null);
+    }
+
+    public Double getParaToDouble(String name, Double defaultValue) {
+        String value = request.getParameter(name);
+        if (value == null) return defaultValue;
+        return Double.parseDouble(value);
+    }
+
+    public Boolean getParaToBool(String name) {
+        return getParaToBool(name, null);
+    }
+
+    public Boolean getParaToBool(String name, Boolean defaultValue) {
         String value = request.getParameter(name);
         if (value == null) return defaultValue;
         return Boolean.parseBoolean(value);

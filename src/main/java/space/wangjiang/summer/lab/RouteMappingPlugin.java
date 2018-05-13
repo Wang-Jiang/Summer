@@ -6,6 +6,7 @@ import space.wangjiang.summer.plugin.Plugin;
 import space.wangjiang.summer.scanner.AbsClassScanner;
 import space.wangjiang.summer.util.StringUtil;
 
+import java.lang.reflect.Modifier;
 import java.util.List;
 
 /**
@@ -26,10 +27,11 @@ public class RouteMappingPlugin implements Plugin {
         AbsClassScanner scanner = new AbsClassScanner(basePackage) {
             @Override
             public boolean accept(Class<?> clazz) {
-                //标记RouteMapping的控制器
+                //标记RouteMapping的Controller，并且该控制器不是抽象的
                 return clazz.isAnnotationPresent(RouteMapping.class)
-                        && Controller.class.isAssignableFrom(clazz)
-                        && !Controller.class.equals(clazz);
+                        && Controller.class.isAssignableFrom(clazz) //clazz是否继承自Controller
+                        && !Controller.class.equals(clazz)  //不获取Controller类本身
+                        && !Modifier.isAbstract(clazz.getModifiers()); //非抽象的
             }
         };
         List<Class<?>> list = scanner.getClassList();
