@@ -30,7 +30,8 @@ public class ConnectionUtil {
      * 事务操作不能随便关闭连接，事务commit或者rollback之后才可以释放Connection资源
      */
     private static void closeConnection(Connection connection) {
-        if (ModelConfig.config.getThreadLocalConnection() == null) {
+        ModelConfig config = ModelConfig.config;
+        if (config == null || config.getThreadLocalConnection() == null) {
             //当前连接不是用于事务操作
             close(connection);
         }
