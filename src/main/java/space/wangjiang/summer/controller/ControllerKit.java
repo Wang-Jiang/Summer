@@ -22,6 +22,11 @@ public class ControllerKit {
         List<Method> list = new ArrayList<>();
         Method[] methods = clazz.getMethods();
         for (Method method : methods) {
+            //判断method是不是Object的notify、notifyAll、wait
+            String methodName = method.getName();
+            if (methodName.equals("notify") || methodName.equals("notifyAll") || methodName.equals("wait")) {
+                continue;
+            }
             //通过反射，获取类定义的公有的无参数方法，不是静态的，并且没有标记NotRoute的注解
             int modifiers = method.getModifiers();
             if (method.getParameterCount() == 0
