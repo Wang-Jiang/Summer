@@ -16,7 +16,10 @@ public @interface Transaction {
     /**
      * <pre>
      * 事务的级别：
-     * Connection.TRANSACTION_READ_UNCOMMITTED，TRANSACTION_READ_COMMITTED，TRANSACTION_REPEATABLE_READ，TRANSACTION_SERIALIZABLE
+     * Connection.TRANSACTION_READ_UNCOMMITTED
+     * TRANSACTION_READ_COMMITTED
+     * TRANSACTION_REPEATABLE_READ
+     * TRANSACTION_SERIALIZABLE
      *
      * 事务导致的问题：
      * 脏读：事务A读取了事务B未提交的数据，并在这个基础上又做了其他操作

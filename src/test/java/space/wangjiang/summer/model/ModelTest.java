@@ -364,6 +364,17 @@ public class ModelTest {
     }
 
     /**
+     * 链式操作
+     */
+    @Test
+    public void chained() {
+        new User()
+                .set("username", getRandomString())
+                .set("email", getRandomString() + "@example.com")
+                .save();
+    }
+
+    /**
      * 获取一个随机的UserId
      */
     private Integer getRandomUserId() {

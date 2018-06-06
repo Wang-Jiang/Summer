@@ -43,10 +43,10 @@ Step 2. Add the dependency
 使用文档参见[DOC.md](DOC.md)
 
 ## TodoList
-* [] 对SqlServer、Oracle、PostgreSQL等主流数据库的支持
-* [] 对FreeMarker等模板引擎的支持
-* [] 完善ModelGenerator对Sqlite数据库的支持
-* [] 增加数据库迁移功能(migration)，由Model直接生成数据库表结构
+- [] 对SqlServer、Oracle、PostgreSQL等主流数据库的支持
+- [] 对FreeMarker等模板引擎的支持
+- [] 完善ModelGenerator对Sqlite数据库的支持
+- [] 增加数据库迁移功能(migration)，由Model直接生成数据库表结构
 
 ## 更新日志
 参见[CHANGELOG.md](CHANGELOG.md)

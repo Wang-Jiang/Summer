@@ -33,6 +33,7 @@ public class Model<M extends Model> implements IJson {
      */
     @SuppressWarnings("unchecked")
     public List<M> find(String sql, Object... params) {
+        Logger.debug("sql: " + sql);
         List<M> list = new ArrayList<>();
         Connection connection = null;
         PreparedStatement statement = null;
@@ -67,7 +68,6 @@ public class Model<M extends Model> implements IJson {
 
     public M findById(Object... id) {
         String sql = getDialect().buildFindByIdSql(getModelMapping());
-        Logger.debug("findById: " + sql);
         List<M> result = find(sql, id);
         if (result.size() > 0) return result.get(0);
         return null;
@@ -124,7 +124,6 @@ public class Model<M extends Model> implements IJson {
 
     public boolean deleteById(Object... id) {
         String sql = getDialect().buildDeleteByIdSql(getModelMapping());
-        Logger.debug("deleteById:" + sql);
         return executeUpdate(sql, id);
     }
 
@@ -138,7 +137,6 @@ public class Model<M extends Model> implements IJson {
         checkPrimaryKeyNotNull();
         List<Object> params = new ArrayList<>();
         String sql = getDialect().buildUpdateSql(getModelMapping(), attrs, params);
-        Logger.debug("update:" + sql);
         return executeUpdate(sql, params.toArray());
     }
 
@@ -168,7 +166,7 @@ public class Model<M extends Model> implements IJson {
      * 这样是不会NPE的
      */
     public boolean executeUpdate(String sql, Object... params) {
-        Logger.debug("executeUpdate=" + sql);
+        Logger.debug("sql: " + sql);
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             getDialect().fillStatement(statement, params);
@@ -241,12 +239,15 @@ public class Model<M extends Model> implements IJson {
 
     //各种基础的赋值取值方法
 
-    public void set(String name, Object value) {
+    @SuppressWarnings("unchecked")
+    public M set(String name, Object value) {
         attrs.put(name, value);
+        return (M) this;
     }
 
-    public Object get(String name) {
-        return attrs.get(name);
+    @SuppressWarnings("unchecked")
+    public <T> T get(String name) {
+        return (T) attrs.get(name);
     }
 
     public Integer getInt(String name) {
@@ -318,7 +319,6 @@ public class Model<M extends Model> implements IJson {
 
         int offset = pageSize * (pageNumber - 1);
         String pageSql = dialect.buildPageSql(selectSql + " " + whereSql, offset, pageSize);
-        Logger.debug("page:" + pageSql);
         List<M> list = find(pageSql, params);
         //总页数
         long totalPage = totalRow % pageSize == 0 ? totalRow / pageSize : totalRow / pageSize + 1;
