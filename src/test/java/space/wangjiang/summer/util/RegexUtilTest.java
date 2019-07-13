@@ -57,7 +57,7 @@ public class RegexUtilTest {
     }
 
     /**
-     * 有缺陷的SQL在匹配字符串的时候会非常消耗资源，例如下面的正则表达式会陷入死循环
+     * 有缺陷的正则在匹配字符串的时候会非常消耗资源，例如下面的正则表达式会陷入死循环
      */
     @Test
     public void reDosTest() {

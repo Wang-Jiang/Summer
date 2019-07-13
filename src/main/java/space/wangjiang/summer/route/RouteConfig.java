@@ -147,12 +147,18 @@ public class RouteConfig {
     }
 
     /**
-     * 传入/user/{userId}
-     * 输出/user/(\w+)
-     * 这个只替换参数，不考虑URL中包含有正则表达式元字符$^{}等
+     * <pre>
+     * 传入/user/{userId} 输出/user/([^/]+)
+     * URL中可以有特殊字符，具体有哪些可以参见 RFC1738，这里为了简单起见，只要不是 / 都可以
+     * 这样会带来一些问题，比如
+     * /user/{userId}-{blogId}
+     * /user/{userId}
+     * 这两个路由
+     * /user/3-7 两个都匹配，当访问/user/3-7的时候，因为URL是依次匹配正则，实际匹配的是哪一个URL，则是看谁在前面了
+     * </pre>
      */
     private static String getRegexUrl(String paramUrl) {
-        return paramUrl.replaceAll("\\{\\w+}", "(\\\\w+)");
+        return paramUrl.replaceAll("\\{\\w+}", "([^/]+)");
     }
 
 }

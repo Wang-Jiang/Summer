@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.*;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Enumeration;
 import java.util.List;
@@ -180,7 +181,6 @@ public abstract class Controller {
         return getCookieToDouble(name, null);
     }
 
-
     public Boolean getCookieToBool(String name, Boolean defaultValue) {
         String result = getCookie(name);
         return result != null ? Boolean.parseBoolean(result) : defaultValue;
@@ -227,7 +227,6 @@ public abstract class Controller {
         setCookie(name, value, -1, null, null, httpOnly);
     }
 
-
     public void setCookie(String name, Object value, int maxAge) {
         setCookie(name, value, maxAge, null, null, false);
     }
@@ -254,7 +253,12 @@ public abstract class Controller {
     public String getPathPara(String name) {
         Object value = request.getAttribute(name);
         if (value != null) {
-            return value.toString();
+            try {
+                //处理URL编码
+                return URLDecoder.decode(value.toString(), "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException(e);
+            }
         }
         return null;
     }
@@ -263,6 +267,7 @@ public abstract class Controller {
      * @see #getPathPara(String)
      */
     public Integer getPathParaToInt(String name) {
+        //数字不存在URL编码的问题
         Object value = request.getAttribute(name);
         if (value != null) {
             return Integer.valueOf(value.toString());

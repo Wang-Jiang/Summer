@@ -7,7 +7,7 @@ import space.wangjiang.summer.util.PathUtil;
 public class MainServer {
 
     public static void main(String[] args) throws Exception {
-        Server server = new Server(8080);
+        Server server = new Server(8000);
         WebAppContext context = new WebAppContext();
         context.setContextPath("/");
         context.setDescriptor(PathUtil.getRootClassPath() + "/webapp/WEB-INF/web.xml");

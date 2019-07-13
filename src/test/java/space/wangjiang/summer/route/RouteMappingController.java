@@ -13,12 +13,28 @@ public class RouteMappingController extends Controller {
 
     @UrlMapping(url = "/route/test/{id}")
     public void test0() {
-        renderText(getPathPara("id"));
+        renderText("match /route/test/{id} id:" + getPathPara("id"));
     }
 
     @UrlMapping(url = "/route/test/{userId}-{blogId}")
     public void test1() {
-        renderText(getPathPara("userId") + "-" + getPathPara("blogId"));
+        renderText("match /route/test/{userId}-{blogId} " +
+                "userId:" + getPathPara("userId") +
+                " blogId:" + getPathPara("blogId"));
+    }
+
+    @UrlMapping(url = "/route/test/{userId}-{blogId}-{commentId}")
+    public void test2() {
+        renderText("match /route/test/{userId}-{blogId}-{commentId} " +
+                "userId:" + getPathPara("userId") +
+                " blogId:" + getPathPara("blogId") +
+                " commentId:" + getPathPara("commentId"));
+    }
+
+    @UrlMapping(url = "/route/test/{userId}.html")
+    public void test3() {
+        renderText("match /route/test/{userId}.html " +
+                "userId:" + getPathPara("userId"));
     }
 
     /**
@@ -26,12 +42,12 @@ public class RouteMappingController extends Controller {
      * 访问/route/test/36.html，两个实际上都是匹配的
      */
     @UrlMapping(url = "/route/test/{blogId}.htm")
-    public void test2() {
+    public void test4() {
         renderText(getPathPara("blogId"));
     }
 
     @UrlMapping(url = "/{userId}/test/{blogId}.html")
-    public void test3() {
+    public void test5() {
         renderText(getPathPara("userId") + "-" + getPathPara("blogId"));
     }
 

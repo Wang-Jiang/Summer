@@ -168,14 +168,14 @@ public void delete() {
 
 这是因为两个路由都是匹配这个url，Summer查找参数路由表，如果发现匹配会直接返回，不会再去匹配余下的路由。因此，当你使用@UrlMapping的时候，应当注意此类特殊情况
 
+当试图创建这样一个路由```@UrlMapping(url = "/user/{userId}-{blogId}")```时需要注意，我们知道URL中是可以有一些特殊字符的，比如 - ，因此当访问```/user/12-30```，Summer可能会错误地匹配路由到```/user/{userId}``` 上面(两个路由正则都匹配此URL，所以实际匹配到谁是看哪一个在前面)，因为12-30可以看做是一个合法的userId，所以在设计此类路由的时候需要谨慎
+
 ### 与JFinal的不同
 Summer的路由设计受JFinal的影响很大，但是增加了一些自己的特色用法，如果你熟悉JFinal的路由设计，下面的内容需要你注意一下差异
 
 Summer并不像JFinal一样把URL的最后一截当做参数，例如/blog/23，在JFinal中可以通过getPara(0)获取23这个值。JFinal因为这个特性，当你试图访问一个不存在的URL，例如/user/test，如果控制器里面没有test()方法，它会把test当做一个参数，去访问控制器的index()方法
 
 Summer中没有这种用法，当访问/user/test的时候，如有没有test()也没有@UrlMapping(url = "/user/{userId}")，那么，Summer将会直接找不到路由，显示404，而不是把test当做一个参数，把请求交给index()方法，因为Summer根本就不支持getPara(0)这种用法
-
-JFinal中有/user/12-363这种用法，可以通过getPara(0)、getPara(1)获取相应的值，如果你也希望做出这种效果，可以用@UrlMapping(url = "/user/{userId}-{blogId}")来实现相同的功能
 
 ### 与Spring的不同
 Summer中的@UrlMapping与Spring中的@RequestMapping很相似，但是需要注意，Summer的路由是不包括请求方式的，只有URL，这也是为什么叫UrlMapping的原因
