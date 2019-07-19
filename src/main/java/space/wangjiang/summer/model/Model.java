@@ -1,5 +1,6 @@
 package space.wangjiang.summer.model;
 
+import space.wangjiang.easylogger.EasyLogger;
 import space.wangjiang.easylogger.json.IJson;
 import space.wangjiang.easylogger.json.JsonUtil;
 import space.wangjiang.summer.common.Logger;
@@ -8,10 +9,7 @@ import space.wangjiang.summer.model.dialect.Dialect;
 
 import java.math.BigDecimal;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by WangJiang on 2017/9/8.
@@ -20,6 +18,11 @@ import java.util.Map;
 public class Model<M extends Model> implements IJson {
 
     private Map<String, Object> attrs = new HashMap<>();
+
+    /**
+     * 被更新的字段
+     */
+    private Set<String> modifyKeys = null;
 
     /**
      * 需要注意，params不要直接传入null
@@ -48,13 +51,13 @@ public class Model<M extends Model> implements IJson {
             String[] columnLabels = new String[metaData.getColumnCount()];
             for (int i = 0; i < columnLabels.length; i++) {
                 //不能调用getColumnName，这个是数据库的实际字段，如果使用了AS别名，getObject就会出错
-                columnLabels[i] = metaData.getColumnLabel(i + 1); //这个index是从1算的
+                //这个index是从1算的
+                columnLabels[i] = metaData.getColumnLabel(i + 1);
             }
             while (resultSet.next()) {
-//                M attrs = new M();    //这种语法是错误的，只能通过反射实现
-                M model = (M) getClass().newInstance(); //unchecked cast警告
+                M model = (M) getClass().newInstance();
                 for (String columnLabel : columnLabels) {
-                    model.set(columnLabel, resultSet.getObject(columnLabel));
+                    model.getAttrs().put(columnLabel, resultSet.getObject(columnLabel));
                 }
                 list.add(model);
             }
@@ -93,15 +96,30 @@ public class Model<M extends Model> implements IJson {
             connection = getConnection();
             //后面的参数表明返回ID
             statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            getDialect().fillStatement(statement, params); //填充参数
+            //填充参数
+            getDialect().fillStatement(statement, params);
             int result = statement.executeUpdate();
             resultSet = statement.getGeneratedKeys();
-            resultSet.next();
+
             //处理主键是自增主键
-            ResultSetMetaData metaData = resultSet.getMetaData();
-            if (metaData.getColumnCount() > 0) {
-                this.set(getPrimaryKey()[0], resultSet.getInt(1));
+            if (resultSet.next()) {
+                for (String primaryKey : getPrimaryKey()) {
+                    if (get(primaryKey) == null) {
+                        Object value;
+                        // mysql中当自增主键是int，但是ResultSetMetaData.getColumnType返回的类型却是Long
+                        Class<?> columnType = getModelMapping().getColumnType(primaryKey);
+                        if (columnType == Integer.class) {
+                            value = resultSet.getInt(1);
+                        } else if (columnType == Long.class) {
+                            value = resultSet.getLong(1);
+                        } else {
+                            value = resultSet.getObject(1);
+                        }
+                        getAttrs().put(primaryKey, value);
+                    }
+                }
             }
+            modifyKeys.clear();
             return result >= 1;
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -128,15 +146,16 @@ public class Model<M extends Model> implements IJson {
     }
 
     /**
-     * update会更新所有的值(内置的BaseDialect策略是不更新主键，其子类MySqlDialect和SqliteDialect也是如此)
-     * 也就是说不管字段有没有修改，update()都会把attrs中的字段更新一遍
-     * 显然这样比较消耗资源，JFinal采用了一个字段是否被修改的标记位，只更新被修改的字段
-     * Summer未来或许会参考这种方式
+     * update只更新被修改的字段，即调用过 set() 的字段
      */
     public boolean update() {
+        if (modifyKeys == null || modifyKeys.isEmpty()) {
+            return false;
+        }
         checkPrimaryKeyNotNull();
         List<Object> params = new ArrayList<>();
-        String sql = getDialect().buildUpdateSql(getModelMapping(), attrs, params);
+        String sql = getDialect().buildUpdateSql(getModelMapping(), attrs, modifyKeys, params);
+        modifyKeys.clear();
         return executeUpdate(sql, params.toArray());
     }
 
@@ -239,8 +258,16 @@ public class Model<M extends Model> implements IJson {
 
     //各种基础的赋值取值方法
 
+    /**
+     * set会修改modifyKeys，在调用update()方法时，会更新这些字段
+     * 如果只是往Model中设置值，并不希望更新到数据库，可以调用 getAttrs().put() 直接修改attrs
+     */
     @SuppressWarnings("unchecked")
     public M set(String name, Object value) {
+        if (modifyKeys == null) {
+            modifyKeys = new HashSet<>();
+        }
+        modifyKeys.add(name);
         attrs.put(name, value);
         return (M) this;
     }

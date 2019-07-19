@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by WangJiang on 2017/9/27.
@@ -51,7 +52,15 @@ public abstract class Dialect {
      */
     public abstract String buildSaveSql(ModelMapping mapping, Map<String, Object> attrs, List<Object> params);
 
-    public abstract String buildUpdateSql(ModelMapping mapping, Map<String, Object> attrs, List<Object> params);
+    /**
+     * 构建update语句
+     *
+     * @param mapping    model与数据库的映射
+     * @param attrs      model的所有字段
+     * @param modifyKeys 被修改的字段
+     * @param params     参数
+     */
+    public abstract String buildUpdateSql(ModelMapping mapping, Map<String, Object> attrs, Set<String> modifyKeys, List<Object> params);
 
     public abstract String buildFindByIdSql(ModelMapping mapping);
 

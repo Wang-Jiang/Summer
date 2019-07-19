@@ -3,8 +3,10 @@ package space.wangjiang.summer.model.dialect;
 import space.wangjiang.summer.model.ModelMapping;
 import space.wangjiang.summer.util.StringUtil;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by WangJiang on 2018/3/27.
@@ -77,20 +79,21 @@ public abstract class BaseDialect extends Dialect {
         return String.format("INSERT INTO %s (%s) VALUES (%s);", wrapTable(mapping.getTable()), keySb, valueSb);
     }
 
-
     @Override
-    public String buildUpdateSql(ModelMapping mapping, Map<String, Object> attrs, List<Object> params) {
-        StringBuilder sb = new StringBuilder();
-        for (Map.Entry<String, Object> entry : attrs.entrySet()) {
-            //主键不需要更新
-            if (!isPrimaryKey(entry.getKey(), mapping.getPrimaryKey())) {
-                if (params.size() > 0) {
-                    sb.append(',');
-                }
-                sb.append(wrapColumn(entry.getKey())).append("=?");
-                params.add(entry.getValue());
-            }
+    public String buildUpdateSql(ModelMapping mapping, Map<String, Object> attrs, Set<String> modifyKeys, List<Object> params) {
+        Map<String, Object> modifyAttrs = new HashMap<>();
+        for (String modifyKey : modifyKeys) {
+            modifyAttrs.put(modifyKey, attrs.get(modifyKey));
         }
+        StringBuilder sb = new StringBuilder();
+        // 只更新被修改的字段
+        for (Map.Entry<String, Object> entry : modifyAttrs.entrySet()) {
+            sb.append(wrapColumn(entry.getKey())).append("=?");
+            sb.append(',');
+            params.add(entry.getValue());
+        }
+        //删除最后一个 ,
+        StringUtil.deleteLastChar(sb);
         String primaryKeySql = buildPrimaryKeySql(mapping, attrs, params);
         return String.format("UPDATE %s SET %s WHERE %s", wrapTable(mapping.getTable()), sb, primaryKeySql);
     }
