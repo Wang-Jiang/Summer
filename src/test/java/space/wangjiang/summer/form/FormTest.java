@@ -2,13 +2,12 @@ package space.wangjiang.summer.form;
 
 import org.junit.Assert;
 import org.junit.Test;
-import space.wangjiang.easylogger.EasyLogger;
 import space.wangjiang.summer.test.BaseTest;
 import space.wangjiang.summer.test.Param;
 
 public class FormTest extends BaseTest {
 
-    private String baseFormUrl = "http://127.0.0.1:8080/form/";
+    private String baseFormUrl = "http://127.0.0.1:8000/form/";
     private String myFormUrl = baseFormUrl + "myForm";
 
     @Test
@@ -72,8 +71,19 @@ public class FormTest extends BaseTest {
     @Test
     public void formTest() {
         PersonForm personForm = new PersonForm();
-        EasyLogger.debug(personForm.getAllFormFields());
-//        EasyLogger.debug(personForm.getClass().getFields());
+        personForm.setName("Jack");
+        personForm.setAge("12");
+        // 当性别是空
+        assert personForm.isNotValid();
+        assert personForm.getErrorMsg().equals("性别必填");
+
+        personForm.gender = "unknown";
+        assert personForm.isNotValid();
+        assert personForm.getErrorMsg().equals("输入有效的性别");
+
+        personForm.gender = "男";
+        assert personForm.isValid();
+
     }
 
 }

@@ -1,9 +1,10 @@
 package space.wangjiang.summer.form;
 
 import space.wangjiang.summer.controller.Controller;
+import space.wangjiang.summer.form.validator.FormValidator;
 import space.wangjiang.summer.util.ReflectUtil;
-import space.wangjiang.summer.util.RegexUtil;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -54,6 +55,7 @@ public abstract class Form {
     /**
      * 好吧，依旧是反射实现的
      */
+    @SuppressWarnings("unchecked")
     public boolean isValid() {
         Set<Field> fields = getAllFormFields();
         for (Field field : fields) {
@@ -68,39 +70,27 @@ public abstract class Form {
             }
             Required required = field.getAnnotation(Required.class);
             if (required == null && value == null) {
-                continue; //该字段不是必填并且为null，跳过该字段检查
+                //该字段不是必填并且为null，跳过该字段检查
+                continue;
             }
-            if (!isRequiredValid(required, value)) {
-                errorMsg = required.errorMsg();
+            if (!FormValidatorMapping.getValidator(Required.class).valid(this, field, required, value)) {
                 return false;
             }
 
-            //必须先校验required，因为如果不是必填的，当其值为空的时候就不需要检查了
-            Type type = field.getAnnotation(Type.class);
-            if (!isTypeValid(type, value)) {
-                errorMsg = type.errorMsg();
-                return false;
-            }
-
-            //长度判断
-            Length length = field.getAnnotation(Length.class);
-            if (!isLengthValid(length, value)) {
-                errorMsg = length.errorMsg();
-                return false;
-            }
-
-            //In判断
-            In in = field.getAnnotation(In.class);
-            if (!isInValid(in, value)) {
-                errorMsg = in.errorMsg();
-                return false;
-            }
-
-            //正则校验
-            Regex regex = field.getAnnotation(Regex.class);
-            if (!isRegexValid(regex, value)) {
-                errorMsg = regex.errorMsg();
-                return false;
+            Annotation[] annotations = field.getDeclaredAnnotations();
+            for (Annotation annotation : annotations) {
+                // 排除掉 Required
+                if (annotation instanceof Required) {
+                    continue;
+                }
+                // 找到对应的字段校验器，getClass()返回的是代理类 com.sun.proxy.$Proxy12
+                Class<? extends Annotation> clazz = annotation.annotationType();
+                FormValidator validator = FormValidatorMapping.getValidator(clazz);
+                if (validator != null) {
+                    if (!validator.valid(this, field, annotation, value)) {
+                        return false;
+                    }
+                }
             }
         }
         return true;
@@ -108,66 +98,6 @@ public abstract class Form {
 
     public boolean isNotValid() {
         return !isValid();
-    }
-
-    //各种判断
-
-    /**
-     * 是否是必填
-     */
-    private boolean isRequiredValid(Required required, String value) {
-        if (required == null) {
-            return true;
-        }
-        //不为null
-        return value != null;
-    }
-
-    private boolean isTypeValid(Type type, String value) {
-        if (type == null) {
-            return true;
-        }
-        switch (type.type()) {
-            case TEXT:
-                //TEXT没什么好判断的，直接返回true
-                return true;
-            case EMAIL:
-                return RegexUtil.isEmail(value);
-            case NUMBER:
-                return RegexUtil.isNumber(value);
-            case TEL:
-                return RegexUtil.isTel(value);
-            case URL:
-                return RegexUtil.isURL(value);
-        }
-        return true;
-    }
-
-    private boolean isLengthValid(Length length, String value) {
-        if (length == null) {
-            return true;
-        }
-        int minLength = length.min();
-        int maxLength = length.max();
-        return value.length() >= minLength && value.length() <= maxLength;
-    }
-
-    private boolean isInValid(In in, Object value) {
-        if (in == null) {
-            return true;
-        }
-        String[] array = in.in().split(",");
-        for (String item : array) {
-            if (item.equals(value)) return true;
-        }
-        return false;
-    }
-
-    private boolean isRegexValid(Regex regex, String value) {
-        if (regex == null) {
-            return true;
-        }
-        return RegexUtil.isMatch(regex.regex(), value);
     }
 
     /**
@@ -188,7 +118,16 @@ public abstract class Form {
         }
     }
 
-    //当有字段不符合要求的时候，返回错误的信息
+    /**
+     * 设置错误消息
+     */
+    public void setErrorMsg(String errorMsg) {
+        this.errorMsg = errorMsg;
+    }
+
+    /**
+     * 当有字段不符合要求的时候，返回错误的信息
+     */
     public String getErrorMsg() {
         return errorMsg;
     }

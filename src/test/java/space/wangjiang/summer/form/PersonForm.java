@@ -5,13 +5,19 @@ package space.wangjiang.summer.form;
  */
 public class PersonForm extends GenderForm {
 
-    public static final String TAG = "TAG";
-
     @Required(errorMsg = "姓名是必填项")
     private String name;
 
     @Type(type = Type.TYPE.NUMBER, errorMsg = "年龄需要是有效的数字")
     private String age;
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setAge(String age) {
+        this.age = age;
+    }
 
     public String getName() {
         return name;
