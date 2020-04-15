@@ -10,6 +10,7 @@ import space.wangjiang.summer.route.NotRoute;
 import space.wangjiang.summer.upload.*;
 import space.wangjiang.summer.util.FileUtil;
 import space.wangjiang.summer.util.ListUtil;
+import space.wangjiang.summer.util.StringUtil;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -80,7 +81,9 @@ public abstract class Controller {
 
     public Integer getParaToInt(String name, Integer defaultValue) {
         String value = request.getParameter(name);
-        if (value == null) return defaultValue;
+        if (StringUtil.isBlank(value)) {
+            return defaultValue;
+        }
         return Integer.parseInt(value);
     }
 
@@ -90,7 +93,9 @@ public abstract class Controller {
 
     public Long getParaToLong(String name, Long defaultValue) {
         String value = request.getParameter(name);
-        if (value == null) return defaultValue;
+        if (StringUtil.isBlank(value)) {
+            return defaultValue;
+        }
         return Long.parseLong(value);
     }
 
@@ -100,7 +105,9 @@ public abstract class Controller {
 
     public Double getParaToDouble(String name, Double defaultValue) {
         String value = request.getParameter(name);
-        if (value == null) return defaultValue;
+        if (StringUtil.isBlank(value)) {
+            return defaultValue;
+        }
         return Double.parseDouble(value);
     }
 
@@ -110,7 +117,9 @@ public abstract class Controller {
 
     public Boolean getParaToBool(String name, Boolean defaultValue) {
         String value = request.getParameter(name);
-        if (value == null) return defaultValue;
+        if (StringUtil.isBlank(value)) {
+            return defaultValue;
+        }
         return Boolean.parseBoolean(value);
     }
 
