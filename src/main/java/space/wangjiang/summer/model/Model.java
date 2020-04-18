@@ -1,8 +1,7 @@
 package space.wangjiang.summer.model;
 
-import space.wangjiang.easylogger.EasyLogger;
-import space.wangjiang.easylogger.json.IJson;
 import space.wangjiang.easylogger.json.JsonUtil;
+import space.wangjiang.easylogger.json.handler.IJson;
 import space.wangjiang.summer.common.Logger;
 import space.wangjiang.summer.config.SummerConfig;
 import space.wangjiang.summer.model.dialect.Dialect;
@@ -15,7 +14,7 @@ import java.util.*;
  * Created by WangJiang on 2017/9/8.
  * Model
  */
-public class Model<M extends Model> implements IJson {
+public class Model<M extends Model<?>> implements IJson {
 
     private Map<String, Object> attrs = new HashMap<>();
 

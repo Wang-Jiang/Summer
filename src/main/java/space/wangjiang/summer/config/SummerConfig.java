@@ -1,18 +1,25 @@
 package space.wangjiang.summer.config;
 
 import space.wangjiang.easylogger.EasyLogger;
+import space.wangjiang.easylogger.json.handler.JsonHandlerMapping;
+import space.wangjiang.easylogger.json.handler.StringJsonHandler;
 import space.wangjiang.summer.common.Logger;
+import space.wangjiang.summer.common.ModelJsonHandler;
 import space.wangjiang.summer.constant.ConstantConfig;
 import space.wangjiang.summer.controller.ErrorController;
+import space.wangjiang.summer.model.Model;
 import space.wangjiang.summer.model.ModelConfig;
 import space.wangjiang.summer.plugin.PluginConfig;
 import space.wangjiang.summer.route.Route;
 import space.wangjiang.summer.route.RouteConfig;
+import space.wangjiang.summer.scanner.ClassScanner;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
+import java.util.Scanner;
 
 /**
  * Created by WangJiang on 2017/9/8.
@@ -96,6 +103,7 @@ public abstract class SummerConfig implements Filter {
         servletContext = filterConfig.getServletContext();
 
         initEasyLogger();
+        JsonHandlerMapping.register(String.class, new StringJsonHandler());
 
         initConstant();
         initRoute(routeConfig);
