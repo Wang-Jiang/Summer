@@ -187,7 +187,7 @@ public class StringUtil {
      */
     public static String uuid() {
         UUID uuid = UUID.randomUUID();
-        return uuid.toString().replace("-", "").toLowerCase();
+        return uuid.toString().replace("-", "");
     }
 
 }
