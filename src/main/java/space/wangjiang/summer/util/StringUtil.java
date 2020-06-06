@@ -1,10 +1,8 @@
 package space.wangjiang.summer.util;
 
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class StringUtil {
-
-    private static final Random RANDOM = new Random();
 
     public static String firstCharToLowerCase(String str) {
         char firstChar = str.charAt(0);
@@ -84,19 +82,11 @@ public class StringUtil {
         String base = "abcdefghijklmnopqrstuvwxyz0123456789";
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < length; i++) {
-            int number = RANDOM.nextInt(base.length());
+            int number = ThreadLocalRandom.current().nextInt(base.length());
             sb.append(base.charAt(number));
         }
         return sb.toString();
     }
-
-    /**
-     * 判断字符串是否是数字
-     */
-//    @Deprecated
-//    public static boolean isNumeric(String str) {
-//        return str.matches("\\d*");
-//    }
 
     /**
      * 返回length位随机数字
@@ -109,7 +99,7 @@ public class StringUtil {
         int[] num = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < length; i++) {
-            sb.append(num[RANDOM.nextInt(10)]);
+            sb.append(num[ThreadLocalRandom.current().nextInt(10)]);
         }
         return sb.toString();
     }
@@ -124,7 +114,7 @@ public class StringUtil {
     public static String getValidRandomNumber(int length) {
         int max = (int) Math.pow(10, length) - 1;   //99**99
         int min = (int) Math.pow(10, length - 1);       //10**00
-        int res = RANDOM.nextInt(max) % (max - min + 1) + min;
+        int res = ThreadLocalRandom.current().nextInt(max) % (max - min + 1) + min;
         return String.valueOf(res);
     }
 
