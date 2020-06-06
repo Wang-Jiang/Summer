@@ -1,5 +1,6 @@
 package space.wangjiang.summer.util;
 
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class StringUtil {
@@ -179,6 +180,14 @@ public class StringUtil {
             return sb;
         }
         return sb.deleteCharAt(sb.length() - 1);
+    }
+
+    /**
+     * 生成全小写的UUID，并删除 -
+     */
+    public static String uuid() {
+        UUID uuid = UUID.randomUUID();
+        return uuid.toString().replace("-", "").toLowerCase();
     }
 
 }
