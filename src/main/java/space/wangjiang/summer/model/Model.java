@@ -23,6 +23,17 @@ public class Model<M extends Model<?>> implements IJson {
      */
     private Set<String> modifyKeys = null;
 
+    private ModelMapping modelMapping = getModelMapping();
+
+    public Model() {
+        super();
+    }
+
+    public Model(ModelMapping modelMapping) {
+        super();
+        this.modelMapping = modelMapping;
+    }
+
     /**
      * 需要注意，params不要直接传入null
      * find("select * from user where name=?", null)
@@ -69,7 +80,7 @@ public class Model<M extends Model<?>> implements IJson {
     }
 
     public M findById(Object... id) {
-        String sql = getDialect().buildFindByIdSql(getModelMapping());
+        String sql = getDialect().buildFindByIdSql(modelMapping);
         List<M> result = find(sql, id);
         if (result.size() > 0) return result.get(0);
         return null;
@@ -86,7 +97,7 @@ public class Model<M extends Model<?>> implements IJson {
      */
     public boolean save() {
         List<Object> params = new ArrayList<>();
-        String sql = getDialect().buildSaveSql(getModelMapping(), attrs, params);
+        String sql = getDialect().buildSaveSql(modelMapping, attrs, params);
         Logger.debug("save:" + sql);
         Connection connection = null;
         PreparedStatement statement = null;
@@ -106,7 +117,7 @@ public class Model<M extends Model<?>> implements IJson {
                     if (get(primaryKey) == null) {
                         Object value;
                         // mysql中当自增主键是int，但是ResultSetMetaData.getColumnType返回的类型却是Long
-                        Class<?> columnType = getModelMapping().getColumnType(primaryKey);
+                        Class<?> columnType = modelMapping.getColumnType(primaryKey);
                         if (columnType == Integer.class) {
                             value = resultSet.getInt(1);
                         } else if (columnType == Long.class) {
@@ -128,7 +139,7 @@ public class Model<M extends Model<?>> implements IJson {
     }
 
     public boolean delete() {
-        String[] primaryKeys = getModelMapping().getPrimaryKey();
+        String[] primaryKeys = modelMapping.getPrimaryKey();
         Object[] ids = new Object[primaryKeys.length];
         for (int i = 0; i < primaryKeys.length; i++) {
             ids[i] = attrs.get(primaryKeys[i]);
@@ -140,7 +151,7 @@ public class Model<M extends Model<?>> implements IJson {
     }
 
     public boolean deleteById(Object... id) {
-        String sql = getDialect().buildDeleteByIdSql(getModelMapping());
+        String sql = getDialect().buildDeleteByIdSql(modelMapping);
         return executeUpdate(sql, id);
     }
 
@@ -153,7 +164,7 @@ public class Model<M extends Model<?>> implements IJson {
         }
         checkPrimaryKeyNotNull();
         List<Object> params = new ArrayList<>();
-        String sql = getDialect().buildUpdateSql(getModelMapping(), attrs, modifyKeys, params);
+        String sql = getDialect().buildUpdateSql(modelMapping, attrs, modifyKeys, params);
         modifyKeys.clear();
         return executeUpdate(sql, params.toArray());
     }
@@ -252,7 +263,7 @@ public class Model<M extends Model<?>> implements IJson {
      * 获取主键
      */
     private String[] getPrimaryKey() {
-        return getModelMapping().getPrimaryKey();
+        return modelMapping.getPrimaryKey();
     }
 
     //各种基础的赋值取值方法
@@ -401,7 +412,7 @@ public class Model<M extends Model<?>> implements IJson {
 
         Model<?> model = (Model<?>) o;
 
-        return attrs != null ? attrs.equals(model.attrs) : model.attrs == null;
+        return Objects.equals(attrs, model.attrs);
     }
 
     @Override
