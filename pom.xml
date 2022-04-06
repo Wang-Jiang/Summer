@@ -15,7 +15,7 @@
         <jetty-version>11.0.9</jetty-version>
         <jetty-continuation-version>9.4.46.v20220331</jetty-continuation-version>
         <jetty-jsp-version>9.2.27.v20190403</jetty-jsp-version>
-        <mysql-connector-version>5.1.39</mysql-connector-version>
+        <mysql-connector-version>8.0.16</mysql-connector-version>
         <sqlite-version>3.20.0</sqlite-version>
         <easylogger-version>45a56e0422</easylogger-version>
         <enjoy-version>3.3</enjoy-version>
